@@ -294,6 +294,155 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://zasdfgbnm.github.io/2017/07/06/Rademacher复杂度学习笔记/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zasdfgbnm">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zasdfgbnm">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/07/06/Rademacher复杂度学习笔记/" itemprop="url">Rademacher复杂度学习笔记</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-06T22:40:59-04:00">
+                2017-07-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/机器学习/" itemprop="url" rel="index">
+                    <span itemprop="name">机器学习</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/07/06/Rademacher复杂度学习笔记/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2017/07/06/Rademacher复杂度学习笔记/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>计算学习理论中的一类很重要的问题是研究训练集训练出来的模型在训练集以外的表现，即泛化误差（generalization error）。我们来考虑这样一个问题，我们想要拟合目标函数$f:\mathcal{X}\to\mathbb{R}$，为此，我们选取假设空间（hypothesis space） $\mathcal{H}$，然后通过某种方法获得一个训练集$S=\left\{(x_1,f(x_1)),(x_2,f(x_2)),\ldots(x_m,f(x_m))\right\}$。这个训练集被认为是从$\mathcal{X}$上的概率分布$\mathcal{P}$进行独立同分布的抽样而来。获得训练集以后，我们把训练集作为输入输送给某个优化算法$\mathscr{A}$。这个算法本身可能是带有随机性的，比如SGD，但是如果把算法使用的随机数发生器生成的随机数也看成算法的输入的话，那么这个优化算法就没有任何随机可言，给定一个训练集$S$以及随机数$\theta$，算法输出唯一的$h=\mathscr{A}(S,\theta)\in\mathcal{H}$。如果我们使用$\mathfrak{l}:\mathbb{R}\times\mathbb{R}\to\mathbb{R}_{\ge0}$作为损失函数来衡量$f$与$g$的差异的话，我们关心的是，当我们的训练误差为$\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]:=\frac{1}{m}\sum_{i=1}^m\mathfrak{l}(h(x_i),f(x_i))$时，我们有多大的置信度来保证这个算法的输出的$h$的泛化误差$\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]$比训练误差不会高出超过$\epsilon$，即<br>$$\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]-\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\leq\epsilon$$</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2017/07/06/Rademacher复杂度学习笔记/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="https://zasdfgbnm.github.io/2017/07/01/我与学校SafeConnect软件斗智斗勇的经历/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -348,8 +497,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/计算机/" itemprop="url" rel="index">
-                    <span itemprop="name">计算机</span>
+                  <a href="/categories/信息安全/" itemprop="url" rel="index">
+                    <span itemprop="name">信息安全</span>
                   </a>
                 </span>
 
@@ -498,8 +647,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/计算机/" itemprop="url" rel="index">
-                    <span itemprop="name">计算机</span>
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
                   </a>
                 </span>
 
@@ -639,7 +788,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-count">3</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -650,7 +799,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/categories/index.html">
-                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-count">4</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -661,7 +810,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

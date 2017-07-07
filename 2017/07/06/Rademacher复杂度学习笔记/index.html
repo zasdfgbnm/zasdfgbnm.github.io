@@ -1,0 +1,833 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="google-site-verification" content="d44tDfSSWxm1_XP1dAq65hkgyD6zw70Ua9JdCaJqWGg" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Rademacher复杂度,计算学习理论,机器学习," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.1" />
+
+
+
+
+
+
+<meta name="description" content="计算学习理论中的一类很重要的问题是研究训练集训练出来的模型在训练集以外的表现，即泛化误差（generalization error）。我们来考虑这样一个问题，我们想要拟合目标函数$f:\mathcal{X}\to\mathbb{R}$，为此，我们选取假设空间（hypothesis space） $\mathcal{H}$，然后通过某种方法获得一个训练集$S=\left\{(x_1,f(x_1)),">
+<meta name="keywords" content="Rademacher复杂度,计算学习理论,机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Rademacher复杂度学习笔记">
+<meta property="og:url" content="https://zasdfgbnm.github.io/2017/07/06/Rademacher复杂度学习笔记/index.html">
+<meta property="og:site_name" content="zasdfgbnm">
+<meta property="og:description" content="计算学习理论中的一类很重要的问题是研究训练集训练出来的模型在训练集以外的表现，即泛化误差（generalization error）。我们来考虑这样一个问题，我们想要拟合目标函数$f:\mathcal{X}\to\mathbb{R}$，为此，我们选取假设空间（hypothesis space） $\mathcal{H}$，然后通过某种方法获得一个训练集$S=\left\{(x_1,f(x_1)),">
+<meta property="og:updated_time" content="2017-07-07T19:05:12.540Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Rademacher复杂度学习笔记">
+<meta name="twitter:description" content="计算学习理论中的一类很重要的问题是研究训练集训练出来的模型在训练集以外的表现，即泛化误差（generalization error）。我们来考虑这样一个问题，我们想要拟合目标函数$f:\mathcal{X}\to\mathbb{R}$，为此，我们选取假设空间（hypothesis space） $\mathcal{H}$，然后通过某种方法获得一个训练集$S=\left\{(x_1,f(x_1)),">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://zasdfgbnm.github.io/2017/07/06/Rademacher复杂度学习笔记/"/>
+
+
+
+
+
+  <title>Rademacher复杂度学习笔记 | zasdfgbnm</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-7583294-5', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?a56abdeb557a286a6b7a104348fdfbcd";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">zasdfgbnm</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+
+    <div>
+      
+      
+      <ul class="post-copyright">
+        <li class="post-copyright-author">
+            <strong>本文作者：</strong>zasdfgbnm
+        </li>
+        <li class="post-copyright-link">
+          <strong>本文链接：</strong>
+          <a href="/2017/07/06/Rademacher复杂度学习笔记/" title="Rademacher复杂度学习笔记">2017/07/06/Rademacher复杂度学习笔记/</a>
+        </li>
+        <li class="post-copyright-license">
+          <strong>版权声明： </strong>
+          本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议。转载请注明出处！
+        </li>
+      </ul>
+      
+    </div>
+
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://zasdfgbnm.github.io/2017/07/06/Rademacher复杂度学习笔记/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zasdfgbnm">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zasdfgbnm">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Rademacher复杂度学习笔记</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-06T22:40:59-04:00">
+                2017-07-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/机器学习/" itemprop="url" rel="index">
+                    <span itemprop="name">机器学习</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/07/06/Rademacher复杂度学习笔记/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2017/07/06/Rademacher复杂度学习笔记/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>计算学习理论中的一类很重要的问题是研究训练集训练出来的模型在训练集以外的表现，即泛化误差（generalization error）。我们来考虑这样一个问题，我们想要拟合目标函数$f:\mathcal{X}\to\mathbb{R}$，为此，我们选取假设空间（hypothesis space） $\mathcal{H}$，然后通过某种方法获得一个训练集$S=\left\{(x_1,f(x_1)),(x_2,f(x_2)),\ldots(x_m,f(x_m))\right\}$。这个训练集被认为是从$\mathcal{X}$上的概率分布$\mathcal{P}$进行独立同分布的抽样而来。获得训练集以后，我们把训练集作为输入输送给某个优化算法$\mathscr{A}$。这个算法本身可能是带有随机性的，比如SGD，但是如果把算法使用的随机数发生器生成的随机数也看成算法的输入的话，那么这个优化算法就没有任何随机可言，给定一个训练集$S$以及随机数$\theta$，算法输出唯一的$h=\mathscr{A}(S,\theta)\in\mathcal{H}$。如果我们使用$\mathfrak{l}:\mathbb{R}\times\mathbb{R}\to\mathbb{R}_{\ge0}$作为损失函数来衡量$f$与$g$的差异的话，我们关心的是，当我们的训练误差为$\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]:=\frac{1}{m}\sum_{i=1}^m\mathfrak{l}(h(x_i),f(x_i))$时，我们有多大的置信度来保证这个算法的输出的$h$的泛化误差$\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]$比训练误差不会高出超过$\epsilon$，即<br>$$\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]-\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\leq\epsilon$$</p>
+<a id="more"></a>
+<p>作为算法的输出，$h$依赖于具体选取的优化算法，以及提供给算法的随机数，这些都不是什么方便研究的东西，于是通常情况下将这层信息抹去。要将这层信息抹去，我们将上式的要求收紧：我们不仅仅要求算法输出的$h$满足上式，而是要求$\mathcal{H}$中的所有元素都满足上式要求。写成式子就是：<br>$$\sup_{h\in\mathcal{H}}\left\{\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]-\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\right\}\leq\epsilon$$</p>
+<p>我们将上式左边的部分记为$\varphi(S)$。由于要求更苛刻了，所以我们估算出来的置信度是更悲观的。实际上的置信度要比估算出来的大一些，即：<br>$$\mathrm{Pr}\left(\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]-\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\leq\epsilon\right)\geq\mathrm{Pr}\left(\varphi(S)\leq\epsilon\right)$$也就是说，通过估算$\mathcal{P}\left(\varphi(S)\leq\epsilon\right)$，我们可以找到我们最终想要的置信度的一个下界。</p>
+<p>下面就来考察$\varphi(S)\leq\epsilon$这个条件。首先来思考一个问题：在保证大的置信度的前提下，$\epsilon$的值我们能往下压到多小呢？我们可以通过加大样本的数量来把$\epsilon$压到任意接近于$0$吗？如果我们对$\mathcal{H}$不加任何限定的话，答案是否定的。为了说明这一点，我们来考虑$\mathcal{H}$是所有$\mathcal{X}\to\mathbb{R}$的函数的集合的情况：通常情况下，我们遇到的问题中的$\mathcal{X}$都是某个$\mathbb{R}^n$，而$\mathcal{P}$则是一个相对于$\mathcal{X}$上的Lebesgue测度绝对连续的概率测度。而$S$呢？一个Lebesgue零测集而已，存在感为零。来看泛化误差吧，根据其定义：$$\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]=\int\mathfrak{l}(h(x),f(x))d\mathcal{P}(x)$$我们非常容易就能找到一个与$f$相去甚远的$h$，这样上述Lebesgue积分的值可以任意大，然后我们把$S$上$h$的值替换为$f$在$S$上的值，上述Lebesgue积分的值仍然保持不变，然而训练误差却变成了$0$。</p>
+<p>上面的思考告诉我们，$\epsilon$的值能往下压到多小是取决于$\mathcal{H}$的性质的。为了能把$\epsilon$的值能往下压，我们必须要对$\mathcal{H}$进行一些限制。而本文所讨论的Rademacher复杂度就是这样一个限制。为了推导出Rademacher复杂度的相关定理，我们将$\varphi(S)$拆成两部分：<br>$$\varphi(S)=\mathrm{E}_S[\varphi(S)]+\left(\varphi(S)-\mathrm{E}_S[\varphi(S)]\right)$$其中$\mathrm{E}_S[\cdot]$表示针对$S$根据其概率（$m$个分布为$\mathcal{P}$的独立同分布的联合概率）求取期望。这两部分的含义我们可以这样直观地理解：设想我们在打靶，砰砰砰若干枪射出去了以后，我们在靶上打下了若干弹孔。这些弹孔的中心（平均位置）代表我们打靶的准确度。如果我们的弹孔中心不在靶心，而是有个整体偏移，这就说明我们的瞄准方法不当，导致没有瞄准到靶心。而这些弹孔的散布，则说明我们的稳定性，如果我们的弹孔散布很大四处都有，这就说明我们打枪的时候手抖得厉害。上面公式中的第一部分$\mathrm{E}_S[\varphi(S)]$相当于打枪弹孔的中心位置，而第二部分$\varphi(S)-\mathrm{E}_S[\varphi(S)]$则相当于每个弹孔相对于中心位置的相对位置。那么，中心位置跟相对位置又分别代表了什么呢？我们来思考一下为什么泛化误差通常会比训练误差大吧：</p>
+<p>一方面，我们的假设空间$\mathcal{H}$并不是只有少数几个元素，而是有非常多的元素的。多到即使把$m$个点的值固定下来，不管这$m$个点具体是什么点，也都远远不足以唯一确定一个$h$。相反，不管取哪$m$个点，总会有很多个$h\in\mathcal{H}$与$f$在这$m$个点处吻合很好并且在这$m$个点之外的地方仍然保持一定的任意性。不要忘了，我们研究的$\varphi(S)$可是要从所有这些吻合的$h$中挑选一个泛化误差最不好的，而$h$在这$m$个点外的这种任意性就给了泛化误差上升的空间。这种独立于这$m$个点的具体的选取方式的效应，造成的泛化误差的上升对于$\varphi(S)$的贡献就是$\mathrm{E}_S[\varphi(S)]$。由于与这$m$个点的选取无关，这种效应是不具有随机性的，它仅与$\mathcal{H}$的性质有关。</p>
+<p>另一方面，具体选取的这$m$个点不一样，自然也会给$h$带来不同大小的任意性。因此，泛化误差比训练误差多出来的那部分$\varphi(S)$不会是一成不变的$\mathrm{E}_S[\varphi(S)]$，而是会根据具体的$S$的值在$\mathrm{E}_S[\varphi(S)]$附近上下波动。这部分对$\varphi(S)$的贡献则是$\varphi(S)-\mathrm{E}_S[\varphi(S)]$。由于$S$是随机选取的，这部分是个随机问题。</p>
+<p>我们既然想要以比较大的置信度断定$\varphi(S)$比较小，这就相当于要求射击选手能够稳定发挥，保证子弹在靶心附近不远，不会出差错。要达到这点要求，射击选手既要保证自己打靶的准确度高，也要保证自己打靶子弹的散布是比较小，二者缺一不可。</p>
+<p>先来看第二部分$\varphi(S)-\mathrm{E}_S[\varphi(S)]$。我们想要这部分比较小，而概率论中刚好有个不等式是这种形式，那就是McDiarmid不等式：</p>
+<blockquote>
+<p><strong>定理（McDiarmid不等式）：</strong> 若$x_1,\ldots,x_m$是$m$个独立随机变量，关于$x_1,\ldots,x_m$的函数$\varphi$满足<br>$$\sup_{x_1,\ldots,x_i,\ldots,x_m,x_i’}\left|\varphi(x_1,\ldots,x_i,\ldots,x_m)-\varphi(x_1,\ldots,x_i’,\ldots,x_m)\right|\leq c_i$$则<br>$$\mathrm{Pr}\left(\varphi(x_1,\ldots,x_m)-\mathrm{E}\left[\varphi(x_1,\ldots,x_m)\right]\geq\epsilon\right)\leq e^{-2\epsilon^2/\sum_{i=1}^m c_i^2}$$</p>
+</blockquote>
+<p>要想套用McDiarmid不等式，我们先来看一下不等式要求中的$\left|\varphi(S)-\varphi(S’)\right|$，其中$S’$是将$S$中第$i$个元素由$x_i$替换为$x_i’$得来：<br>$$\begin{eqnarray}<br>\left|\varphi(S)-\varphi(S’)\right|=\left|\sup_{h\in\mathcal{H}}\left\{\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]-\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\right\}-\sup_{h\in\mathcal{H}}\left\{\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]-\hat{\mathrm{E}}_{x\in S’}[\mathfrak{l}(h(x),f(x))]\right\}\right| \\<br>\leq\sup_{h\in\mathcal{H}}\left|\hat{\mathrm{E}}_{x\in S’}[\mathfrak{l}(h(x),f(x))]-\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\right|=\frac{1}{m}\sup_{h\in\mathcal{H}}\left|\mathfrak{l}(h(x_i’),f(x_i’))-\mathfrak{l}(h(x_i),f(x_i))\right|\leq\frac{M}{m}<br>\end{eqnarray}$$其中<br>$$M=\sup_{h\in\mathcal{H}}\left\{\sup_{x\in\mathcal{X}}\mathfrak{l}(h(x),f(x))-\inf_{x\in\mathcal{X}}\mathfrak{l}(h(x),f(x))\right\}$$这里我们确实有假定$h$与$f$之间的最大误差是有界的。有了上面的关系，我们就得到<br>$$\mathrm{Pr}\left(\varphi(S)-\mathrm{E}_S\left[\varphi(S)\right]\geq\epsilon\right)\leq e^{-2m\epsilon^2/M^2}$$如果我们令上述概率为$\delta$，则可解出<br>$$\epsilon=M\sqrt{\frac{\log\frac{1}{\delta}}{2m}}$$于是，我们可以以$1-\delta$的置信概率来相信$\varphi(S)-\mathrm{E}_S[\varphi(S)]$的值不会超过$M\sqrt{\frac{\log\frac{1}{\delta}}{2m}}$。第二部分算是研究完了。</p>
+<p>再来看一下第一部分$\mathrm{E}_S[\varphi(S)]$。我们希望通过对这一部分的研究来导出一个对$\mathcal{H}$的合理的约束。引入一个同样包含$m$个元素的幽灵样本$\tilde{S}$，则$\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]$可以写成<br>$$\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]=\mathrm{E}_{\tilde{S}}\left[\hat{\mathrm{E}}_{\tilde{x}\in\tilde{S}}[\mathfrak{l}(h(\tilde{x}),f(\tilde{x}))]\right]$$由于$\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]$相对于$\tilde{S}$来讲只是个常数而已，因此有<br>$$\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]=\mathrm{E}_{\tilde{S}}\left[\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\right]$$于是$\varphi(S)$可以写成<br>$$\begin{eqnarray}<br>\varphi(S)=\sup_{h\in\mathcal{H}}\left\{\mathrm{E}_{\tilde{S}}\left[\hat{\mathrm{E}}_{\tilde{x}\in\tilde{S}}[\mathfrak{l}(h(\tilde{x}),f(\tilde{x}))]-\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\right]\right\} \\<br>\leq\mathrm{E}_{\tilde{S}}\left[\sup_{h\in\mathcal{H}}\left\{\hat{\mathrm{E}}_{\tilde{x}\in\tilde{S}}[\mathfrak{l}(h(\tilde{x}),f(\tilde{x}))]-\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\right\}\right]<br>\end{eqnarray}$$于是有<br>$$\begin{eqnarray}<br>\mathrm{E}_S[\varphi(S)]\leq\mathrm{E}_{S,\tilde{S}}\left[\sup_{h\in\mathcal{H}}\left\{\hat{\mathrm{E}}_{\tilde{x}\in\tilde{S}}[\mathfrak{l}(h(\tilde{x}),f(\tilde{x}))]-\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\right\}\right] \\<br>=\mathrm{E}_{S,\tilde{S}}\left[\sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}\left[\mathfrak{l}(h(\tilde{x}_{i}),f(\tilde{x}_{i}))-\mathfrak{l}(h(x_{i}),f(x_{i}))\right] \right\}\right]<br>\end{eqnarray}$$注意到上式中的$S$跟$\tilde{S}$相互独立且服从相同的分布，并且他们中的每个元素也是独立同分布的。于是对于任意的$i$，我们总是可以把$\tilde{x}_i$与$x_i$对调让$\tilde{x}_i$到$S$中去而让$x_i$到$\tilde{S}$中去，这种对调并不影响总的结果。于是可以引入一个新的在$\{-1,1\}$中取值的随机变量$\sigma$用来控制是否进行上述对调。只要$\sigma$与$S$跟$\tilde{S}$相互独立，这个新引入的随机变量并不会对结果有任何改变。写成式子就是：<br>$$\mathrm{E}_{S,\tilde{S}}\left[\sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}\left[\mathfrak{l}(h(\tilde{x}_{i}),f(\tilde{x}_{i}))-\mathfrak{l}(h(x_{i}),f(x_{i}))\right] \right\}\right]=\mathrm{E}_{\sigma,S,\tilde{S}}\left[\sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}\sigma_i\left[\mathfrak{l}(h(\tilde{x}_{i}),f(\tilde{x}_{i}))-\mathfrak{l}(h(x_{i}),f(x_{i}))\right] \right\}\right]$$<br>注意到<br>$$\begin{eqnarray}<br>\mathrm{E}_{\sigma,S,\tilde{S}}\left[\sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}\sigma_i\left[\mathfrak{l}(h(\tilde{x}_{i}),f(\tilde{x}_{i}))-\mathfrak{l}(h(x_{i}),f(x_{i}))\right] \right\}\right] \leq \mathrm{E}_{\sigma,S,\tilde{S}}\left[\sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}\sigma_i\mathfrak{l}(h(\tilde{x}_{i}),f(\tilde{x}_{i}))\right\} + \sup_{h\in\mathcal{H}}\left\{\sum_{i=1}^{m}-\sigma_i\mathfrak{l}(h(x_{i}),f(x_{i}))\right\} \right]    \\<br>= \mathrm{E}_{\sigma,\tilde{S}}\left[\sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}\sigma_i\mathfrak{l}(h(\tilde{x}_{i}),f(\tilde{x}_{i}))\right\}\right] + \mathrm{E}_{\sigma,S}\left[\sup_{h\in\mathcal{H}}\left\{\sum_{i=1}^{m}-\sigma_i\mathfrak{l}(h(x_{i}),f(x_{i}))\right\} \right]    \\<br>= \mathrm{E}_{\sigma,\tilde{S}}\left[\sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}\sigma_i\mathfrak{l}(h(\tilde{x}_{i}),f(\tilde{x}_{i}))\right\}\right] + \mathrm{E}_{\sigma,S}\left[\sup_{h\in\mathcal{H}}\left\{\sum_{i=1}^{m}\sigma_i\mathfrak{l}(h(x_{i}),f(x_{i}))\right\} \right]    \\<br>= 2 \mathrm{E}_{\sigma,S}\left[\sup_{h\in\mathcal{H}}\left\{\sum_{i=1}^{m}\sigma_i\mathfrak{l}(h(x_{i}),f(x_{i}))\right\} \right]<br>\end{eqnarray}<br>$$<br>记<br>$$\mathrm{R}_m(\mathfrak{l}(\mathcal{H},f))=\mathrm{E}_{\sigma,S}\left[\sup_{h\in\mathcal{H}}\left\{\sum_{i=1}^{m}\sigma_i\mathfrak{l}(h(x_{i}),f(x_{i}))\right\} \right]$$并称其为函数$\mathfrak{l}(h(x),f(x))$的Rademacher复杂度。我们有关系式：<br>$$\mathrm{E}_S[\varphi(S)]\leq 2\mathrm{R}_m(\mathfrak{l}(\mathcal{H},f))$$</p>
+<p>综上，我们可以说：我们可以以$1-\delta$的置信概率来相信$\varphi(S)$的值不会超过<br>$$2\mathrm{R}_m(\mathfrak{l}(\mathcal{H},f))+M\sqrt{\frac{\log\frac{1}{\delta}}{2m}}$$<br>这就是我们想要的最终结果。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Rademacher复杂度/" rel="tag"># Rademacher复杂度</a>
+          
+            <a href="/tags/计算学习理论/" rel="tag"># 计算学习理论</a>
+          
+            <a href="/tags/机器学习/" rel="tag"># 机器学习</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/07/01/我与学校SafeConnect软件斗智斗勇的经历/" rel="next" title="我与学校SafeConnect软件斗智斗勇的经历">
+                <i class="fa fa-chevron-left"></i> 我与学校SafeConnect软件斗智斗勇的经历
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+
+
+    <div class="post-spread">
+      
+    </div>
+
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview sidebar-panel sidebar-panel-active">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="zasdfgbnm" />
+          <p class="site-author-name" itemprop="name">zasdfgbnm</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/zasdfgbnm" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zasdfgbnm</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://zasdfgbnm-github-io.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://zasdfgbnm.github.io/2017/07/06/Rademacher复杂度学习笔记/';
+          this.page.identifier = '2017/07/06/Rademacher复杂度学习笔记/';
+          this.page.title = 'Rademacher复杂度学习笔记';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://zasdfgbnm-github-io.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>
