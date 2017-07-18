@@ -4,6 +4,54 @@
 
     
   <url>
+    <loc>https://zasdfgbnm.github.io/2017/06/29/%E8%83%BD%E5%BD%93%E4%B8%BB%E5%8A%9B%EF%BC%8C%E8%83%BD%E5%85%A5%E8%99%9A%E6%8B%9F%E6%9C%BA%EF%BC%8C%E8%BF%98%E8%83%BD%E9%9A%8F%E6%97%B6%E6%89%93%E5%8C%85%E5%B8%A6%E8%B5%B0%EF%BC%8CLinux%E5%B0%B1%E6%98%AF%E8%BF%99%E4%B9%88%E5%BC%BA%E5%A4%A7/</loc>
+    <lastmod>2017-07-18T06:02:33.318Z</lastmod>
+    <data>
+        <display>
+        <title>能当主力，能入虚拟机，还能随时打包带走，Linux就是这么强大</title>
+        <pubTime>2017-06-29T14:52:54.000Z</pubTime>
+        
+        <tag>Linux</tag>
+         
+        <tag>系统管理</tag>
+         
+        <tag>btrfs</tag>
+         
+        <tag>refind</tag>
+         
+        <tag>fstab</tag>
+         
+        <tag>root</tag>
+         
+        <tag>rootfs</tag>
+         
+        <tag>虚拟机</tag>
+         
+        <tag>容器</tag>
+         
+        <tag>virtfs</tag>
+         
+        <tag>KVM</tag>
+         
+        <tag>qemu</tag>
+         
+        <tag>VitualBox</tag>
+         
+        <tag>Plan 9</tag>
+         
+        <tag>ramfs</tag>
+         
+         
+           
+             
+              <breadCrumb title="Linux" url="https://zasdfgbnm.github.io/categories/Linux/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>https://zasdfgbnm.github.io/2017/07/06/Rademacher%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</loc>
     <lastmod>2017-07-07T20:02:18.885Z</lastmod>
     <data>
@@ -57,50 +105,6 @@
            
              
               <breadCrumb title="信息安全" url="https://zasdfgbnm.github.io/categories/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://zasdfgbnm.github.io/2017/06/29/%E8%83%BD%E5%BD%93%E4%B8%BB%E5%8A%9B%EF%BC%8C%E8%83%BD%E5%85%A5%E8%99%9A%E6%8B%9F%E6%9C%BA%EF%BC%8C%E8%BF%98%E8%83%BD%E9%9A%8F%E6%97%B6%E6%89%93%E5%8C%85%E5%B8%A6%E8%B5%B0%EF%BC%8CLinux%E5%B0%B1%E6%98%AF%E8%BF%99%E4%B9%88%E5%BC%BA%E5%A4%A7/</loc>
-    <lastmod>2017-07-07T12:48:41.454Z</lastmod>
-    <data>
-        <display>
-        <title>能当主力，能入虚拟机，还能随时打包带走，Linux就是这么强大</title>
-        <pubTime>2017-06-29T14:52:54.000Z</pubTime>
-        
-        <tag>Linux</tag>
-         
-        <tag>系统管理</tag>
-         
-        <tag>btrfs</tag>
-         
-        <tag>refind</tag>
-         
-        <tag>fstab</tag>
-         
-        <tag>rootfs</tag>
-         
-        <tag>虚拟机</tag>
-         
-        <tag>容器</tag>
-         
-        <tag>virtfs</tag>
-         
-        <tag>KVM</tag>
-         
-        <tag>qemu</tag>
-         
-        <tag>VitualBox</tag>
-         
-        <tag>Plan 9</tag>
-         
-         
-           
-             
-              <breadCrumb title="Linux" url="https://zasdfgbnm.github.io/categories/Linux/"/>
           
         </display>
     </data>
