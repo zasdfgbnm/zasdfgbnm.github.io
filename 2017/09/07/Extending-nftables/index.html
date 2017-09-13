@@ -1,28 +1,432 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-  <title>zasdfgbnm</title>
+<!doctype html>
+
+
+
   
-  <link href="/atom.xml" rel="self"/>
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="google-site-verification" content="d44tDfSSWxm1_XP1dAq65hkgyD6zw70Ua9JdCaJqWGg" />
+
+
+
+
+
+
+
+
+
+
+
+
+
   
-  <link href="https://zasdfgbnm.github.io/"/>
-  <updated>2017-09-13T04:15:27.592Z</updated>
-  <id>https://zasdfgbnm.github.io/</id>
   
-  <author>
-    <name>zasdfgbnm</name>
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
     
-  </author>
-  
-  <generator uri="http://hexo.io/">Hexo</generator>
-  
-  <entry>
-    <title>Adding new expressions to nftables</title>
-    <link href="https://zasdfgbnm.github.io/2017/09/07/Extending-nftables/"/>
-    <id>https://zasdfgbnm.github.io/2017/09/07/Extending-nftables/</id>
-    <published>2017-09-07T19:50:12.000Z</published>
-    <updated>2017-09-13T04:15:27.592Z</updated>
     
-    <content type="html"><![CDATA[<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>I’m recently writing something that uses Linux’s firewall framework to do some non-standard operations packets. Extending the kernel is required for my task but unfortunately documentations about this topic I find online are quite dated. These old documents are mainly for kernel version 2.4 and earlier 2.6.x, in which new matches or targets are registered by calling <code>ipt_register_match</code> and <code>ipt_register_target</code>. The related subsystem of kernel has changed a lot since then, and iptables has been replaced by nftables. Although we can use <code>xt_register_match</code> and <code>xt_register_target</code> instead, I prefer to move to the new nftables framework. Due to the lack of documentation, I have to dig into the source code of Linux kernel to figure out how things works, and this post is the note for that. As Linus Torvalds says in 2008, “Linux is evolution, not intelligent design”, the design and API of nftables might be changing very fast. So I’m not only trying to make a brief review on the design or API of nftables. But also, this post will serve as a guide on how to find the correct way of doing things by reading the kernel source code. The eager reader can go directly to <a href="#summary">the summary section</a>. This post is based on kernel version 4.13, the most recent version when this post is started writing.</p>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Linux,Kernel,nftables,network,netfilter," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="zasdfgbnm" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.1" />
+
+
+
+
+
+
+<meta name="description" content="IntroductionI’m recently writing something that uses Linux’s firewall framework to do some non-standard operations packets. Extending the kernel is required for my task but unfortunately documentation">
+<meta name="keywords" content="Linux,Kernel,nftables,network,netfilter">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Adding new expressions to nftables">
+<meta property="og:url" content="https://zasdfgbnm.github.io/2017/09/07/Extending-nftables/index.html">
+<meta property="og:site_name" content="zasdfgbnm">
+<meta property="og:description" content="IntroductionI’m recently writing something that uses Linux’s firewall framework to do some non-standard operations packets. Extending the kernel is required for my task but unfortunately documentation">
+<meta property="og:updated_time" content="2017-09-13T04:15:27.592Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Adding new expressions to nftables">
+<meta name="twitter:description" content="IntroductionI’m recently writing something that uses Linux’s firewall framework to do some non-standard operations packets. Extending the kernel is required for my task but unfortunately documentation">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://zasdfgbnm.github.io/2017/09/07/Extending-nftables/"/>
+
+
+
+
+
+  <title>Adding new expressions to nftables | zasdfgbnm</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-7583294-5', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?a56abdeb557a286a6b7a104348fdfbcd";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">zasdfgbnm</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br />
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+
+    <div>
+      
+      
+      <ul class="post-copyright">
+        <li class="post-copyright-author">
+            <strong>本文作者：</strong>zasdfgbnm
+        </li>
+        <li class="post-copyright-link">
+          <strong>本文链接：</strong>
+          <a href="/2017/09/07/Extending-nftables/" title="Adding new expressions to nftables">2017/09/07/Extending-nftables/</a>
+        </li>
+        <li class="post-copyright-license">
+          <strong>版权声明： </strong>
+          本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议。转载请注明出处！
+        </li>
+      </ul>
+      
+    </div>
+
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://zasdfgbnm.github.io/2017/09/07/Extending-nftables/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zasdfgbnm">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zasdfgbnm">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Adding new expressions to nftables</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-07T15:50:12-04:00">
+                2017-09-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/09/07/Extending-nftables/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2017/09/07/Extending-nftables/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>I’m recently writing something that uses Linux’s firewall framework to do some non-standard operations packets. Extending the kernel is required for my task but unfortunately documentations about this topic I find online are quite dated. These old documents are mainly for kernel version 2.4 and earlier 2.6.x, in which new matches or targets are registered by calling <code>ipt_register_match</code> and <code>ipt_register_target</code>. The related subsystem of kernel has changed a lot since then, and iptables has been replaced by nftables. Although we can use <code>xt_register_match</code> and <code>xt_register_target</code> instead, I prefer to move to the new nftables framework. Due to the lack of documentation, I have to dig into the source code of Linux kernel to figure out how things works, and this post is the note for that. As Linus Torvalds says in 2008, “Linux is evolution, not intelligent design”, the design and API of nftables might be changing very fast. So I’m not only trying to make a brief review on the design or API of nftables. But also, this post will serve as a guide on how to find the correct way of doing things by reading the kernel source code. The eager reader can go directly to <a href="#summary">the summary section</a>. This post is based on kernel version 4.13, the most recent version when this post is started writing.</p>
 <p>Here in this post, we will solve a toy problem: monitor all outgoing TCP traffic from port 80, if it contains the string given by the user, log it. I don’t assume any knowledge in the design or kernel API of nftables, but I do assume the reader has read and understand well <a href="https://wiki.nftables.org" target="_blank" rel="external">the official documents on how to use nftables</a>.</p>
 <a id="more"></a>
 <h1 id="Starting-point-of-kernel-code"><a href="#Starting-point-of-kernel-code" class="headerlink" title="Starting point of kernel code"></a>Starting point of kernel code</h1><p>The starting point is to find which source file to read. The following command gives a nice overview on nftables in Linux kernel:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">grep -P <span class="string">'nftables|nf_tables'</span> -r .</div></pre></td></tr></table></figure></p>
@@ -74,285 +478,455 @@
 <p>The abcde branch of nftables and libnftnl can be found at GitHub:<br><a href="https://github.com/zasdfgbnm/nftables/tree/abcde" target="_blank" rel="external">https://github.com/zasdfgbnm/nftables/tree/abcde</a><br><a href="https://github.com/zasdfgbnm/libnftnl/tree/abcde" target="_blank" rel="external">https://github.com/zasdfgbnm/libnftnl/tree/abcde</a></p>
 <h1 id="Test"><a href="#Test" class="headerlink" title="Test"></a>Test</h1><p>Our new module can be tested by inserting our module, and then using our self-compiled nft tool to add a rule that looks like:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">PREFIX=/home/gaoxiang/tmp/test_nftables</div><div class="line"><span class="built_in">export</span> LD_LIBRARY_PATH=<span class="variable">$PREFIX</span>/lib</div><div class="line"><span class="variable">$PREFIX</span>/sbin/nft add table ip <span class="built_in">test</span></div><div class="line"><span class="variable">$PREFIX</span>/sbin/nft add chain <span class="built_in">test</span> <span class="built_in">test</span> \&#123; <span class="built_in">type</span> filter hook postrouting priority 0\; \&#125;</div><div class="line"><span class="variable">$PREFIX</span>/sbin/nft add rule ip <span class="built_in">test</span> <span class="built_in">test</span> tcp sport 4000 abcde darkhttpd <span class="built_in">log</span> prefix <span class="string">"darkhttpd___"</span></div></pre></td></tr></table></figure></p>
 <p>Open a darkhttpd server, access to it, and the output of <code>dmesg</code> will looks like:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">[13846.376162] darkhttpd___IN= OUT=lo SRC=127.0.0.1 DST=127.0.0.1 LEN=40 TOS=0x00 PREC=0x00 TTL=64 ID=18158 DF PROTO=TCP SPT=4000 DPT=49670 WINDOW=0 RES=0x00 RST URGP=0</div><div class="line">[13846.376179] darkhttpd___IN= OUT=lo SRC=127.0.0.1 DST=127.0.0.1 LEN=40 TOS=0x00 PREC=0x00 TTL=64 ID=18159 DF PROTO=TCP SPT=4000 DPT=49666 WINDOW=0 RES=0x00 RST URGP=0</div><div class="line">[13846.376194] darkhttpd___IN= OUT=lo SRC=127.0.0.1 DST=127.0.0.1 LEN=40 TOS=0x00 PREC=0x00 TTL=64 ID=18160 DF PROTO=TCP SPT=4000 DPT=49674 WINDOW=0 RES=0x00 RST URGP=0</div><div class="line">[13846.376211] darkhttpd___IN= OUT=lo SRC=127.0.0.1 DST=127.0.0.1 LEN=40 TOS=0x00 PREC=0x00 TTL=64 ID=18161 DF PROTO=TCP SPT=4000 DPT=49658 WINDOW=0 RES=0x00 RST URGP=0</div><div class="line">[13846.376225] darkhttpd___IN= OUT=lo SRC=127.0.0.1 DST=127.0.0.1 LEN=40 TOS=0x00 PREC=0x00 TTL=64 ID=18162 DF PROTO=TCP SPT=4000 DPT=49662 WINDOW=0 RES=0x00 RST URGP=0</div></pre></td></tr></table></figure></p>
-]]></content>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/Kernel/" rel="tag"># Kernel</a>
+          
+            <a href="/tags/nftables/" rel="tag"># nftables</a>
+          
+            <a href="/tags/network/" rel="tag"># network</a>
+          
+            <a href="/tags/netfilter/" rel="tag"># netfilter</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/07/06/Rademacher复杂度学习笔记/" rel="next" title="Rademacher复杂度学习笔记">
+                <i class="fa fa-chevron-left"></i> Rademacher复杂度学习笔记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+
+
+    <div class="post-spread">
+      
+    </div>
+
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
     
-    <summary type="html">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
     
-      &lt;h1 id=&quot;Introduction&quot;&gt;&lt;a href=&quot;#Introduction&quot; class=&quot;headerlink&quot; title=&quot;Introduction&quot;&gt;&lt;/a&gt;Introduction&lt;/h1&gt;&lt;p&gt;I’m recently writing something that uses Linux’s firewall framework to do some non-standard operations packets. Extending the kernel is required for my task but unfortunately documentations about this topic I find online are quite dated. These old documents are mainly for kernel version 2.4 and earlier 2.6.x, in which new matches or targets are registered by calling &lt;code&gt;ipt_register_match&lt;/code&gt; and &lt;code&gt;ipt_register_target&lt;/code&gt;. The related subsystem of kernel has changed a lot since then, and iptables has been replaced by nftables. Although we can use &lt;code&gt;xt_register_match&lt;/code&gt; and &lt;code&gt;xt_register_target&lt;/code&gt; instead, I prefer to move to the new nftables framework. Due to the lack of documentation, I have to dig into the source code of Linux kernel to figure out how things works, and this post is the note for that. As Linus Torvalds says in 2008, “Linux is evolution, not intelligent design”, the design and API of nftables might be changing very fast. So I’m not only trying to make a brief review on the design or API of nftables. But also, this post will serve as a guide on how to find the correct way of doing things by reading the kernel source code. The eager reader can go directly to &lt;a href=&quot;#summary&quot;&gt;the summary section&lt;/a&gt;. This post is based on kernel version 4.13, the most recent version when this post is started writing.&lt;/p&gt;
-&lt;p&gt;Here in this post, we will solve a toy problem: monitor all outgoing TCP traffic from port 80, if it contains the string given by the user, log it. I don’t assume any knowledge in the design or kernel API of nftables, but I do assume the reader has read and understand well &lt;a href=&quot;https://wiki.nftables.org&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;the official documents on how to use nftables&lt;/a&gt;.&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="Linux" scheme="https://zasdfgbnm.github.io/categories/Linux/"/>
-    
-    
-      <category term="Linux" scheme="https://zasdfgbnm.github.io/tags/Linux/"/>
-    
-      <category term="Kernel" scheme="https://zasdfgbnm.github.io/tags/Kernel/"/>
-    
-      <category term="nftables" scheme="https://zasdfgbnm.github.io/tags/nftables/"/>
-    
-      <category term="network" scheme="https://zasdfgbnm.github.io/tags/network/"/>
-    
-      <category term="netfilter" scheme="https://zasdfgbnm.github.io/tags/netfilter/"/>
-    
-  </entry>
+  </div>
+
+
+        </div>
+        
+          
   
-  <entry>
-    <title>Rademacher复杂度学习笔记</title>
-    <link href="https://zasdfgbnm.github.io/2017/07/06/Rademacher%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"/>
-    <id>https://zasdfgbnm.github.io/2017/07/06/Rademacher复杂度学习笔记/</id>
-    <published>2017-07-07T02:40:59.000Z</published>
-    <updated>2017-07-07T20:02:18.885Z</updated>
-    
-    <content type="html"><![CDATA[<p>计算学习理论中的一类很重要的问题是研究训练集训练出来的模型在训练集以外的表现，即泛化误差（generalization error）。我们来考虑这样一个问题，我们想要拟合目标函数$f:\mathcal{X}\to\mathbb{R}$，为此，我们选取假设空间（hypothesis space） $\mathcal{H}$，然后通过某种方法获得一个训练集$S=\left\{(x_1,f(x_1)),(x_2,f(x_2)),\ldots(x_m,f(x_m))\right\}$。这个训练集被认为是从$\mathcal{X}$上的概率分布$\mathcal{P}$进行独立同分布的抽样而来。获得训练集以后，我们把训练集作为输入输送给某个优化算法$\mathscr{A}$。这个算法本身可能是带有随机性的，比如SGD，但是如果把算法使用的随机数发生器生成的随机数也看成算法的输入的话，那么这个优化算法就没有任何随机可言，给定一个训练集$S$以及随机数$\theta$，算法输出唯一的$h=\mathscr{A}(S,\theta)\in\mathcal{H}$。如果我们使用$\mathfrak{l}:\mathbb{R}\times\mathbb{R}\to\mathbb{R}_{\ge0}$作为损失函数来衡量$f$与$g$的差异的话，我们关心的是，当我们的训练误差为$\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]:=\frac{1}{m}\sum_{i=1}^m\mathfrak{l}(h(x_i),f(x_i))$时，我们有多大的置信度来保证这个算法的输出的$h$的泛化误差$\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]$比训练误差不会高出超过$\epsilon$，即<br>$$\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]-\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\leq\epsilon$$</p>
-<a id="more"></a>
-<p>作为算法的输出，$h$依赖于具体选取的优化算法，以及提供给算法的随机数，这些都不是什么方便研究的东西，于是通常情况下将这层信息抹去。要将这层信息抹去，我们将上式的要求收紧：我们不仅仅要求算法输出的$h$满足上式，而是要求$\mathcal{H}$中的所有元素都满足上式要求。写成式子就是：<br>$$\sup_{h\in\mathcal{H}}\left\{\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]-\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\right\}\leq\epsilon$$</p>
-<p>我们将上式左边的部分记为$\varphi(S)$。由于要求更苛刻了，所以我们估算出来的置信度是更悲观的。实际上的置信度要比估算出来的大一些，即：<br>$$\mathrm{Pr}\left(\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]-\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\leq\epsilon\right)\geq\mathrm{Pr}\left(\varphi(S)\leq\epsilon\right)$$也就是说，通过估算$\mathcal{P}\left(\varphi(S)\leq\epsilon\right)$，我们可以找到我们最终想要的置信度的一个下界。</p>
-<p>下面就来考察$\varphi(S)\leq\epsilon$这个条件。首先来思考一个问题：在保证大的置信度的前提下，$\epsilon$的值我们能往下压到多小呢？我们可以通过加大样本的数量来把$\epsilon$压到任意接近于$0$吗？如果我们对$\mathcal{H}$不加任何限定的话，答案是否定的。为了说明这一点，我们来考虑$\mathcal{H}$是所有$\mathcal{X}\to\mathbb{R}$的函数的集合的情况：通常情况下，我们遇到的问题中的$\mathcal{X}$都是某个$\mathbb{R}^n$，而$\mathcal{P}$则是一个相对于$\mathcal{X}$上的Lebesgue测度绝对连续的概率测度。而$S$呢？一个Lebesgue零测集而已，存在感为零。来看泛化误差吧，根据其定义：$$\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]=\int\mathfrak{l}(h(x),f(x))d\mathcal{P}(x)$$我们非常容易就能找到一个与$f$相去甚远的$h$，这样上述Lebesgue积分的值可以任意大，然后我们把$S$上$h$的值替换为$f$在$S$上的值，上述Lebesgue积分的值仍然保持不变，然而训练误差却变成了$0$。</p>
-<p>上面的思考告诉我们，$\epsilon$的值能往下压到多小是取决于$\mathcal{H}$的性质的。为了能把$\epsilon$的值能往下压，我们必须要对$\mathcal{H}$进行一些限制。而本文所讨论的Rademacher复杂度就是这样一个限制。为了推导出Rademacher复杂度的相关定理，我们将$\varphi(S)$拆成两部分：<br>$$\varphi(S)=\mathrm{E}_S[\varphi(S)]+\left(\varphi(S)-\mathrm{E}_S[\varphi(S)]\right)$$其中$\mathrm{E}_S[\cdot]$表示针对$S$根据其概率（$m$个分布为$\mathcal{P}$的独立同分布的联合概率）求取期望。这两部分的含义我们可以这样直观地理解：设想我们在打靶，砰砰砰若干枪射出去了以后，我们在靶上打下了若干弹孔。这些弹孔的中心（平均位置）代表我们打靶的准确度。如果我们的弹孔中心不在靶心，而是有个整体偏移，这就说明我们的瞄准方法不当，导致没有瞄准到靶心。而这些弹孔的散布，则说明我们的稳定性，如果我们的弹孔散布很大四处都有，这就说明我们打枪的时候手抖得厉害。上面公式中的第一部分$\mathrm{E}_S[\varphi(S)]$相当于打枪弹孔的中心位置，而第二部分$\varphi(S)-\mathrm{E}_S[\varphi(S)]$则相当于每个弹孔相对于中心位置的相对位置。那么，中心位置跟相对位置又分别代表了什么呢？我们来思考一下为什么泛化误差通常会比训练误差大吧：</p>
-<p>一方面，我们的假设空间$\mathcal{H}$并不是只有少数几个元素，而是有非常多的元素的。多到即使把$m$个点的值固定下来，不管这$m$个点具体是什么点，也都远远不足以唯一确定一个$h$。相反，不管取哪$m$个点，总会有很多个$h\in\mathcal{H}$与$f$在这$m$个点处吻合很好并且在这$m$个点之外的地方仍然保持一定的任意性。不要忘了，我们研究的$\varphi(S)$可是要从所有这些吻合的$h$中挑选一个泛化误差最不好的，而$h$在这$m$个点外的这种任意性就给了泛化误差上升的空间。这种独立于这$m$个点的具体的选取方式的效应，造成的泛化误差的上升对于$\varphi(S)$的贡献就是$\mathrm{E}_S[\varphi(S)]$。由于与这$m$个点的选取无关，这种效应是不具有随机性的，它仅与$\mathcal{H}$的性质有关。</p>
-<p>另一方面，具体选取的这$m$个点不一样，自然也会给$h$带来不同大小的任意性。因此，泛化误差比训练误差多出来的那部分$\varphi(S)$不会是一成不变的$\mathrm{E}_S[\varphi(S)]$，而是会根据具体的$S$的值在$\mathrm{E}_S[\varphi(S)]$附近上下波动。这部分对$\varphi(S)$的贡献则是$\varphi(S)-\mathrm{E}_S[\varphi(S)]$。由于$S$是随机选取的，这部分是个随机问题。</p>
-<p>我们既然想要以比较大的置信度断定$\varphi(S)$比较小，这就相当于要求射击选手能够稳定发挥，保证子弹在靶心附近不远，不会出差错。要达到这点要求，射击选手既要保证自己打靶的准确度高，也要保证自己打靶子弹的散布是比较小，二者缺一不可。</p>
-<p>先来看第二部分$\varphi(S)-\mathrm{E}_S[\varphi(S)]$。我们想要这部分比较小，而概率论中刚好有个不等式是这种形式，那就是McDiarmid不等式：</p>
-<blockquote>
-<p><strong>定理（McDiarmid不等式）：</strong> 若$x_1,\ldots,x_m$是$m$个独立随机变量，关于$x_1,\ldots,x_m$的函数$\varphi$满足<br>$$\sup_{x_1,\ldots,x_i,\ldots,x_m,x_i’}\left|\varphi(x_1,\ldots,x_i,\ldots,x_m)-\varphi(x_1,\ldots,x_i’,\ldots,x_m)\right|\leq c_i$$则<br>$$\mathrm{Pr}\left(\varphi(x_1,\ldots,x_m)-\mathrm{E}\left[\varphi(x_1,\ldots,x_m)\right]\geq\epsilon\right)\leq e^{-2\epsilon^2/\sum_{i=1}^m c_i^2}$$</p>
-</blockquote>
-<p>要想套用McDiarmid不等式，我们先来看一下不等式要求中的$\left|\varphi(S)-\varphi(S’)\right|$，其中$S’$是将$S$中第$i$个元素由$x_i$替换为$x_i’$得来：<br>$$\begin{eqnarray}<br>\left|\varphi(S)-\varphi(S’)\right|=\left|\sup_{h\in\mathcal{H}}\left\{\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]-\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\right\}-\sup_{h\in\mathcal{H}}\left\{\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]-\hat{\mathrm{E}}_{x\in S’}[\mathfrak{l}(h(x),f(x))]\right\}\right| \\<br>\leq\sup_{h\in\mathcal{H}}\left|\hat{\mathrm{E}}_{x\in S’}[\mathfrak{l}(h(x),f(x))]-\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\right|=\frac{1}{m}\sup_{h\in\mathcal{H}}\left|\mathfrak{l}(h(x_i’),f(x_i’))-\mathfrak{l}(h(x_i),f(x_i))\right|\leq\frac{M}{m}<br>\end{eqnarray}$$其中<br>$$M=\sup_{h\in\mathcal{H}}\left\{\sup_{x\in\mathcal{X}}\mathfrak{l}(h(x),f(x))-\inf_{x\in\mathcal{X}}\mathfrak{l}(h(x),f(x))\right\}$$这里我们确实有假定$h$与$f$之间的最大误差是有界的。有了上面的关系，我们就得到<br>$$\mathrm{Pr}\left(\varphi(S)-\mathrm{E}_S\left[\varphi(S)\right]\geq\epsilon\right)\leq e^{-2m\epsilon^2/M^2}$$如果我们令上述概率为$\delta$，则可解出<br>$$\epsilon=M\sqrt{\frac{\log\frac{1}{\delta}}{2m}}$$于是，我们可以以$1-\delta$的置信概率来相信$\varphi(S)-\mathrm{E}_S[\varphi(S)]$的值不会超过$M\sqrt{\frac{\log\frac{1}{\delta}}{2m}}$。第二部分算是研究完了。</p>
-<p>再来看一下第一部分$\mathrm{E}_S[\varphi(S)]$。我们希望通过对这一部分的研究来导出一个对$\mathcal{H}$的合理的约束。引入一个同样包含$m$个元素的幽灵样本$\tilde{S}$，则$\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]$可以写成<br>$$\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]=\mathrm{E}_{\tilde{S}}\left[\hat{\mathrm{E}}_{\tilde{x}\in\tilde{S}}[\mathfrak{l}(h(\tilde{x}),f(\tilde{x}))]\right]$$由于$\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]$相对于$\tilde{S}$来讲只是个常数而已，因此有<br>$$\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]=\mathrm{E}_{\tilde{S}}\left[\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\right]$$于是$\varphi(S)$可以写成<br>$$\begin{eqnarray}<br>\varphi(S)=\sup_{h\in\mathcal{H}}\left\{\mathrm{E}_{\tilde{S}}\left[\hat{\mathrm{E}}_{\tilde{x}\in\tilde{S}}[\mathfrak{l}(h(\tilde{x}),f(\tilde{x}))]-\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\right]\right\} \\<br>\leq\mathrm{E}_{\tilde{S}}\left[\sup_{h\in\mathcal{H}}\left\{\hat{\mathrm{E}}_{\tilde{x}\in\tilde{S}}[\mathfrak{l}(h(\tilde{x}),f(\tilde{x}))]-\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\right\}\right]<br>\end{eqnarray}$$于是有<br>$$\begin{eqnarray}<br>\mathrm{E}_S[\varphi(S)]\leq\mathrm{E}_{S,\tilde{S}}\left[\sup_{h\in\mathcal{H}}\left\{\hat{\mathrm{E}}_{\tilde{x}\in\tilde{S}}[\mathfrak{l}(h(\tilde{x}),f(\tilde{x}))]-\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\right\}\right] \\<br>=\mathrm{E}_{S,\tilde{S}}\left[\sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}\left[\mathfrak{l}(h(\tilde{x}_{i}),f(\tilde{x}_{i}))-\mathfrak{l}(h(x_{i}),f(x_{i}))\right] \right\}\right]<br>\end{eqnarray}$$注意到上式中的$S$跟$\tilde{S}$相互独立且服从相同的分布，并且他们中的每个元素也是独立同分布的。于是对于任意的$i$，我们总是可以把$\tilde{x}_i$与$x_i$对调让$\tilde{x}_i$到$S$中去而让$x_i$到$\tilde{S}$中去，这种对调并不影响总的结果。于是可以引入一个新的在$\{-1,1\}$中取值的随机变量$\sigma$用来控制是否进行上述对调。只要$\sigma$与$S$跟$\tilde{S}$相互独立，这个新引入的随机变量并不会对结果有任何改变。写成式子就是：<br>$$\mathrm{E}_{S,\tilde{S}}\left[\sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}\left[\mathfrak{l}(h(\tilde{x}_{i}),f(\tilde{x}_{i}))-\mathfrak{l}(h(x_{i}),f(x_{i}))\right] \right\}\right]=\mathrm{E}_{\sigma,S,\tilde{S}}\left[\sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}\sigma_i\left[\mathfrak{l}(h(\tilde{x}_{i}),f(\tilde{x}_{i}))-\mathfrak{l}(h(x_{i}),f(x_{i}))\right] \right\}\right]$$<br>注意到<br>$$\begin{eqnarray}<br>\mathrm{E}_{\sigma,S,\tilde{S}}\left[\sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}\sigma_i\left[\mathfrak{l}(h(\tilde{x}_{i}),f(\tilde{x}_{i}))-\mathfrak{l}(h(x_{i}),f(x_{i}))\right] \right\}\right] \leq \mathrm{E}_{\sigma,S,\tilde{S}}\left[\sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}\sigma_i\mathfrak{l}(h(\tilde{x}_{i}),f(\tilde{x}_{i}))\right\} + \sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}-\sigma_i\mathfrak{l}(h(x_{i}),f(x_{i}))\right\} \right]    \\<br>= \mathrm{E}_{\sigma,\tilde{S}}\left[\sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}\sigma_i\mathfrak{l}(h(\tilde{x}_{i}),f(\tilde{x}_{i}))\right\}\right] + \mathrm{E}_{\sigma,S}\left[\sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}-\sigma_i\mathfrak{l}(h(x_{i}),f(x_{i}))\right\} \right]    \\<br>= \mathrm{E}_{\sigma,\tilde{S}}\left[\sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}\sigma_i\mathfrak{l}(h(\tilde{x}_{i}),f(\tilde{x}_{i}))\right\}\right] + \mathrm{E}_{\sigma,S}\left[\sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}\sigma_i\mathfrak{l}(h(x_{i}),f(x_{i}))\right\} \right]    \\<br>= 2 \mathrm{E}_{\sigma,S}\left[\sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}\sigma_i\mathfrak{l}(h(x_{i}),f(x_{i}))\right\} \right]<br>\end{eqnarray}<br>$$<br>记<br>$$\mathrm{R}_m(\mathfrak{l}(\mathcal{H},f))=\mathrm{E}_{\sigma,S}\left[\sup_{h\in\mathcal{H}}\left\{\frac{1}{m}\sum_{i=1}^{m}\sigma_i\mathfrak{l}(h(x_{i}),f(x_{i}))\right\} \right]$$并称其为函数$\mathfrak{l}(h(x),f(x))$的Rademacher复杂度。我们有关系式：<br>$$\mathrm{E}_S[\varphi(S)]\leq 2\mathrm{R}_m(\mathfrak{l}(\mathcal{H},f))$$</p>
-<p>综上，我们可以说：我们可以以$1-\delta$的置信概率来相信$\varphi(S)$的值不会超过<br>$$2\mathrm{R}_m(\mathfrak{l}(\mathcal{H},f))+M\sqrt{\frac{\log\frac{1}{\delta}}{2m}}$$<br>这就是我们想要的最终结果。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;计算学习理论中的一类很重要的问题是研究训练集训练出来的模型在训练集以外的表现，即泛化误差（generalization error）。我们来考虑这样一个问题，我们想要拟合目标函数$f:\mathcal{X}\to\mathbb{R}$，为此，我们选取假设空间（hypothesis space） $\mathcal{H}$，然后通过某种方法获得一个训练集$S=\left\{(x_1,f(x_1)),(x_2,f(x_2)),\ldots(x_m,f(x_m))\right\}$。这个训练集被认为是从$\mathcal{X}$上的概率分布$\mathcal{P}$进行独立同分布的抽样而来。获得训练集以后，我们把训练集作为输入输送给某个优化算法$\mathscr{A}$。这个算法本身可能是带有随机性的，比如SGD，但是如果把算法使用的随机数发生器生成的随机数也看成算法的输入的话，那么这个优化算法就没有任何随机可言，给定一个训练集$S$以及随机数$\theta$，算法输出唯一的$h=\mathscr{A}(S,\theta)\in\mathcal{H}$。如果我们使用$\mathfrak{l}:\mathbb{R}\times\mathbb{R}\to\mathbb{R}_{\ge0}$作为损失函数来衡量$f$与$g$的差异的话，我们关心的是，当我们的训练误差为$\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]:=\frac{1}{m}\sum_{i=1}^m\mathfrak{l}(h(x_i),f(x_i))$时，我们有多大的置信度来保证这个算法的输出的$h$的泛化误差$\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]$比训练误差不会高出超过$\epsilon$，即&lt;br&gt;$$\mathrm{E}_{x\sim\mathcal{P}}[\mathfrak{l}(h(x),f(x))]-\hat{\mathrm{E}}_{x\in S}[\mathfrak{l}(h(x),f(x))]\leq\epsilon$$&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="机器学习" scheme="https://zasdfgbnm.github.io/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
-    
-    
-      <category term="Rademacher复杂度" scheme="https://zasdfgbnm.github.io/tags/Rademacher%E5%A4%8D%E6%9D%82%E5%BA%A6/"/>
-    
-      <category term="计算学习理论" scheme="https://zasdfgbnm.github.io/tags/%E8%AE%A1%E7%AE%97%E5%AD%A6%E4%B9%A0%E7%90%86%E8%AE%BA/"/>
-    
-      <category term="机器学习" scheme="https://zasdfgbnm.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
-    
-  </entry>
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="zasdfgbnm" />
+          <p class="site-author-name" itemprop="name">zasdfgbnm</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">31</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/zasdfgbnm" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Starting-point-of-kernel-code"><span class="nav-number">2.</span> <span class="nav-text">Starting point of kernel code</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-usage-of-kernel-API"><span class="nav-number">3.</span> <span class="nav-text">The usage of kernel API</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#struct-nft-expr-ops"><span class="nav-number">3.1.</span> <span class="nav-text">struct nft_expr_ops</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#struct-nft-expr-type"><span class="nav-number">3.2.</span> <span class="nav-text">struct nft_expr_type</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Summary-on-kernel-codes"><span class="nav-number">4.</span> <span class="nav-text">Summary on kernel codes</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Writing-our-own-kernel-code"><span class="nav-number">5.</span> <span class="nav-text">Writing our own kernel code</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Modify-user-space-tool"><span class="nav-number">6.</span> <span class="nav-text">Modify user space tool</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Test"><span class="nav-number">7.</span> <span class="nav-text">Test</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
   
-  <entry>
-    <title>我与学校SafeConnect软件斗智斗勇的经历</title>
-    <link href="https://zasdfgbnm.github.io/2017/07/01/%E6%88%91%E4%B8%8E%E5%AD%A6%E6%A0%A1SafeConnect%E8%BD%AF%E4%BB%B6%E6%96%97%E6%99%BA%E6%96%97%E5%8B%87%E7%9A%84%E7%BB%8F%E5%8E%86/"/>
-    <id>https://zasdfgbnm.github.io/2017/07/01/我与学校SafeConnect软件斗智斗勇的经历/</id>
-    <published>2017-07-01T16:53:10.000Z</published>
-    <updated>2017-07-07T12:48:50.934Z</updated>
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zasdfgbnm</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
     
-    <content type="html"><![CDATA[<p><strong>版权信息：博主就是本文原创作者，但是本文最早发布于<a href="http://www.freebuf.com/news/topnews/125994.html" target="_blank" rel="external">FreeBuf</a>，并属FreeBuf原创奖励计划，如需转载请联系FreeBuf。</strong></p>
-<p>故事是这样的，本文作者读书的学校，IT部门要求我们如果使用Windows或者Mac OS要连接学校网络的话，必须安装SafeConnect客户端。这个客户端干的事情就是监视你的系统，确保你安装、启用并及时更新杀毒软件，确保你及时更新电脑上的Flash跟Java，确保你不使用P2P软件。然而我一直很不喜欢这种被监视的感觉，感觉这是侵犯了我的人权，况且我很少用P2P来下载盗版内容，偶尔用P2P一直都是用来下载Linux的安装镜像的，这种宁可错杀一千也不放过一个的做法实在是让人难以忍受。再加上学校的IT部门的人非常官僚，自己还没啥技术，曾经有同学找他们备份数据结果数据没备份成他们反而把分区表给搞坏了，这就让我坚定了跟他们斗争到底的想法，刚好也可以打发业余时光。由于SafeConnect客户端不支持Linux系统，同时学校中Linux用户的数量相当多，所以Linux系统不需要安装任何客户端，直接就能访问网络，这是一个关键性的切入点。</p>
-<a id="more"></a>
-<p>要同SafeConnect斗争，有两个切入点，一个是从SafeConnect客户端做手脚，想办法让SafeConnect客户端丧失相应的监测功能，只是傻傻地给他们的服务器汇报一切符合要求，另一个则是从SafeConnect网关的操作系统检测入手，只要能让网关认为我们用的是Linux系统，我们就可以上网了，这样连SafeConnect客户端都不用装了。</p>
-<p>第一个切入点需要对SafeConnect进行逆向工程，搞清楚SafeConnect这些项目的检测机制。逆向工程向来都是费时费力，成本巨大，而且不可以跨平台。不过幸运的是，SafeConnect检测P2P软件的方式经过简单测试作者就发现了端倪：<br><img src="/2017/07/01/我与学校SafeConnect软件斗智斗勇的经历/p2p-blocked.png" alt="打开P2P软件，网络被断，遭到警告" title="打开P2P软件，网络被断，遭到警告"><br><img src="/2017/07/01/我与学校SafeConnect软件斗智斗勇的经历/p2p-changeprocname.png" alt="把P2P软件的进程名改掉，正常使用未被发现" title="把P2P软件的进程名改掉，正常使用未被发现"><br><img src="/2017/07/01/我与学校SafeConnect软件斗智斗勇的经历/helloworld-blockedasp2p.png" alt="自己写一个Hello World程序并命名为为BitTorrent.exe并打开，网络被断，遭到警告" title="自己写一个Hello World程序并命名为为BitTorrent.exe并打开，网络被断，遭到警告"></p>
-<p>从上面的测试不难看出，SafeConnect通过列举系统的进程，如果发现黑名单中的进程名，就给你断开网络链接，然后弹出网页警告你说我们检测到你在使用P2P软件，这违反了学校的规定。明白了原理，就可以开干了。既然SafeConnect列举系统进程，那我们就使用进程隐藏技术把P2P软件的进程隐藏起来。</p>
-<p>Windows系统有很多API可以访问系统的进程信息，但是所有这些API在底层最终都会调用<code>NtQuerySystemInformation</code>来获取系统进程信息。这个系统调用总共有四个参数，其中第一个参数<code>SystemInformationClass</code>表示的是你要查询的系统信息的类型，对于列举系统进程而言，这个参数的值应为<code>SystemProcessInformation</code>。第二个参数<code>SystemInformation</code>存储着获得的系统信息，对于列举进程而言，这个参数存储着一个链表，链表的每一项都是一个进程，而要隐藏进程，我们只需要从链表中删除相应的项即可。要篡改系统调用的结果，需要用到DLL注入技术将DLL注入到目标进程的地址空间，然后篡改地址空间中<code>NtQuerySystemInformation</code>函数的的代码加入跳转语句跳转到我们伪造的<code>NtQuerySystemInformation</code>去，这就是DLL注入的整个运行过程。整个DLL注入的过程不需要亲自动手，有现成的<a href="http://easyhook.github.io" target="_blank" rel="external">EasyHook库</a>可以实现。</p>
-<p>不多说，贴代码：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;easyhook.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;tchar.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;windows.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;shlwapi.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;winternl.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;ntstatus.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="meta">#<span class="meta-keyword">pragma</span> comment(lib, <span class="meta-string">"EasyHook32.lib"</span>)</span></div><div class="line"><span class="meta">#<span class="meta-keyword">pragma</span> comment(lib, <span class="meta-string">"ntdll.lib"</span> )</span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> HIDE_PROCESS_NAME TEXT(<span class="meta-string">"BitTorrent.exe"</span>)</span></div><div class="line"></div><div class="line"><span class="function">BOOL APIENTRY <span class="title">DllMain</span><span class="params">(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> TRUE;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>我们要Hook的函数位于ntdll.dll，所以在代码中要引用一下ntdll.lib。我们要写的dll的entry不需要做任何事情。接下来就是我们的自定义<code>NtQuerySystemInformation</code>了，在这里我把它命名为<code>myNtQuerySystemInformation</code>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"><span class="function">NTSTATUS WINAPI <span class="title">myNtQuerySystemInformation</span><span class="params">(SYSTEM_INFORMATION_CLASS SystemInformationClass,</span></span></div><div class="line">                                           PVOID SystemInformation, ULONG SystemInformationLength,</div><div class="line">                                           PULONG ReturnLength) &#123;</div><div class="line">    NTSTATUS status = NtQuerySystemInformation(SystemInformationClass, SystemInformation,</div><div class="line">                                               SystemInformationLength, ReturnLength);</div><div class="line">    <span class="keyword">if</span> (status != STATUS_SUCCESS)</div><div class="line">        <span class="keyword">return</span> status;</div><div class="line">    <span class="keyword">if</span> (SystemInformationClass == SystemProcessInformation) &#123;</div><div class="line">        PSYSTEM_PROCESS_INFORMATION pcur = <span class="literal">NULL</span>, pprev = <span class="literal">NULL</span>;</div><div class="line">        pcur = (PSYSTEM_PROCESS_INFORMATION)SystemInformation;</div><div class="line">        <span class="keyword">while</span> (<span class="number">1</span>) &#123;</div><div class="line">            <span class="keyword">if</span> (pcur-&gt;Reserved2[<span class="number">1</span>] != <span class="literal">NULL</span>) &#123;</div><div class="line">                <span class="keyword">if</span> (_tcscmp((LPTSTR)(pcur-&gt;Reserved2[<span class="number">1</span>]), HIDE_PROCESS_NAME) == <span class="number">0</span>) &#123;</div><div class="line">                    <span class="comment">// delete element from linked list</span></div><div class="line">                    <span class="keyword">if</span> (pcur-&gt;NextEntryOffset == <span class="number">0</span> &amp;&amp; pprev != <span class="literal">NULL</span>)</div><div class="line">                        pprev-&gt;NextEntryOffset = <span class="number">0</span>;</div><div class="line">                    <span class="keyword">else</span> <span class="keyword">if</span> (pprev != <span class="literal">NULL</span>)</div><div class="line">                        pprev-&gt;NextEntryOffset += pcur-&gt;NextEntryOffset;</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    pprev = pcur;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (pcur-&gt;NextEntryOffset == <span class="number">0</span>)</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">            pcur = (PSYSTEM_PROCESS_INFORMATION)((ULONG)pcur + pcur-&gt;NextEntryOffset);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> status;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>正如刚刚介绍的那样，这个函数做的事情就是把要隐藏的进程从链表删掉。同时，EasyHook还要求我们在dll中定义安装函数，这个不复杂，直接从官方教程粘贴代码简单改改就好：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">extern</span> <span class="string">"C"</span> <span class="keyword">void</span> __declspec(dllexport) __<span class="function">stdcall <span class="title">NativeInjectionEntryPoint</span><span class="params">(REMOTE_ENTRY_INFO* inRemoteInfo)</span></span>;</div><div class="line"></div><div class="line"><span class="keyword">void</span> __<span class="function">stdcall <span class="title">NativeInjectionEntryPoint</span><span class="params">(REMOTE_ENTRY_INFO* inRemoteInfo)</span> </span>&#123;</div><div class="line">    HOOK_TRACE_INFO hHook = &#123; <span class="literal">NULL</span> &#125;;</div><div class="line">    HMODULE ntdll = GetModuleHandle(TEXT(<span class="string">"ntdll"</span>));</div><div class="line">    NTSTATUS result = LhInstallHook(GetProcAddress(ntdll, <span class="string">"NtQuerySystemInformation"</span>),</div><div class="line">                                    myNtQuerySystemInformation,<span class="literal">NULL</span>,&amp;hHook);</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (FAILED(result))</div><div class="line">        <span class="built_in">std</span>::wcout &lt;&lt; RtlGetLastErrorString() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</div><div class="line">    <span class="keyword">else</span></div><div class="line">        <span class="built_in">std</span>::wcout &lt;&lt; <span class="string">"NtQuerySystemInformation hook success!"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</div><div class="line"></div><div class="line">    <span class="comment">// If the threadId in the ACL is set to 0,</span></div><div class="line">    <span class="comment">// then internally EasyHook uses GetCurrentThreadId()</span></div><div class="line">    ULONG ACLEntries[<span class="number">1</span>] = &#123; <span class="number">0</span> &#125;;</div><div class="line"></div><div class="line">    <span class="comment">// Disable the hook for the provided threadIds, enable for all others</span></div><div class="line">    LhSetExclusiveACL(ACLEntries, <span class="number">1</span>, &amp;hHook);</div><div class="line">    <span class="keyword">return</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>写好了DLL，下一步就是找到目标进程注入进去了。仔细研究一下那个SafeConnect，可以发现他总共有两部分：一个scManager.sys系统服务，以及一个SafeConnectClient.exe进程，实测发现把DLL注入到SafeConnectClient.exe不管用，于是断定负责检索系统进程列表的是scManager.sys。</p>
-<p>下图是用来将我们写的DLL注入到scManager.sys的代码，这里代码做的事情是查找名为scManager.sys的进程，读取进程的PID，然后调用EasyHook的API将我们写的DLL注入到对应的进程中。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;tchar.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cstring&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;easyhook.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;psapi.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="meta">#<span class="meta-keyword">pragma</span> comment(lib, <span class="meta-string">"EasyHook32.lib"</span>)</span></div><div class="line"><span class="meta">#<span class="meta-keyword">pragma</span> comment(lib, <span class="meta-string">"psapi.lib"</span> )</span></div><div class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</div><div class="line"></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> NUM_PROC 1</span></div><div class="line">TCHAR * targets[NUM_PROC] = &#123;</div><div class="line">    TEXT(<span class="string">"scManager.sys"</span>)</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="function">DWORD <span class="title">getTargetProcessID</span><span class="params">(TCHAR *target)</span> </span>&#123;</div><div class="line">    DWORD aProcesses[<span class="number">1024</span>], cbNeeded, cProcesses;</div><div class="line">    <span class="keyword">if</span>(!EnumProcesses(aProcesses, <span class="keyword">sizeof</span>(aProcesses), &amp;cbNeeded))</div><div class="line">        <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">    cProcesses = cbNeeded / <span class="keyword">sizeof</span>(DWORD);</div><div class="line">    <span class="keyword">for</span> (DWORD i = <span class="number">0</span>; i &lt; cProcesses; i++) &#123;</div><div class="line">        <span class="keyword">if</span> (aProcesses[i] != <span class="number">0</span>)&#123;</div><div class="line">            TCHAR szProcessName[MAX_PATH] = TEXT(<span class="string">"&lt;unknown&gt;"</span>);</div><div class="line">            HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION|PROCESS_VM_READ,</div><div class="line">                                          FALSE, aProcesses[i]);</div><div class="line">            <span class="keyword">if</span> (<span class="literal">NULL</span> != hProcess) &#123;</div><div class="line">                HMODULE hMod;</div><div class="line">                DWORD cbNeeded;</div><div class="line">                <span class="keyword">if</span> (EnumProcessModules(hProcess, &amp;hMod, <span class="keyword">sizeof</span>(hMod),&amp;cbNeeded))</div><div class="line">                    GetModuleBaseName(hProcess, hMod, szProcessName,<span class="keyword">sizeof</span>(szProcessName)/<span class="keyword">sizeof</span>(TCHAR));</div><div class="line">                CloseHandle(hProcess);</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (_tcscmp(target, szProcessName) == <span class="number">0</span>)</div><div class="line">                <span class="keyword">return</span> aProcesses[i];</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; NUM_PROC; i++) &#123;</div><div class="line">        DWORD processId = getTargetProcessID(targets[i]);</div><div class="line">        HMODULE ntdll = GetModuleHandle(TEXT(<span class="string">"ntdll"</span>));</div><div class="line">        <span class="built_in">std</span>::wcout &lt;&lt; <span class="string">"target func in injector has address "</span></div><div class="line">                   &lt;&lt; GetProcAddress(ntdll, <span class="string">"NtQuerySystemInformation"</span>) &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</div><div class="line">        <span class="keyword">if</span> (processId == <span class="number">0</span>) &#123;</div><div class="line">            <span class="built_in">std</span>::wcout &lt;&lt; <span class="string">"Unable to find the process ID for "</span></div><div class="line">                       &lt;&lt; targets[i] &lt;&lt; <span class="string">", please manually input: "</span>;</div><div class="line">            <span class="built_in">std</span>::<span class="built_in">cin</span> &gt;&gt; processId;</div><div class="line">            <span class="built_in">std</span>::wstring input;</div><div class="line">            <span class="built_in">std</span>::getline(<span class="built_in">std</span>::wcin, input);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (processId!=<span class="number">0</span>) &#123;</div><div class="line">            NTSTATUS nt = RhInjectLibrary(processId, <span class="number">0</span>, EASYHOOK_INJECT_DEFAULT,</div><div class="line">                                          <span class="string">L"fuck_safeconnect.dll"</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="number">0</span>);</div><div class="line">            <span class="keyword">if</span> (nt != <span class="number">0</span>) &#123;</div><div class="line">                <span class="built_in">printf</span>(<span class="string">"RhInjectLibrary failed with error code = %d\n"</span>, nt);</div><div class="line">                PWCHAR err = RtlGetLastErrorString();</div><div class="line">                <span class="built_in">std</span>::wcout &lt;&lt; err &lt;&lt; <span class="string">"\n"</span>;</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                <span class="built_in">std</span>::wcout &lt;&lt; <span class="string">"inject success!\n"</span>;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="built_in">std</span>::wcout &lt;&lt; <span class="string">"Press Enter to exit"</span>;</div><div class="line">    <span class="built_in">std</span>::wstring input;</div><div class="line">    <span class="built_in">std</span>::getline(<span class="built_in">std</span>::wcin, input);</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>由于scManager.sys是个系统服务，单纯的“以管理员身份运行”是无法成功注入的，这时候就需要把注入器提权到SYSTEM用户来进行注入。提权到SYSTEM的操作可以用微软提供的<a href="https://technet.microsoft.com/en-us/sysinternals/pxexec.aspx" target="_blank" rel="external">PsExec</a>工具来进行。PsExec是个命令行工具，使用PsExec非常简单，只需要<code>psexec –i –s 程序名</code>即可。<br><img src="/2017/07/01/我与学校SafeConnect软件斗智斗勇的经历/inject-success.png" alt="注入成功，这时候再打开BitTorrent就不被断网了" title="注入成功，这时候再打开BitTorrent就不被断网了"></p>
-<p>由于逆向工程太过费时费力，笔者并没有在SafeConnect客户端上多费心思，而是转向了第二种方法：欺骗SafeConnect的服务器端的操作系统检测功能。要检测连进来的设备的操作系统，一种常用的方法是TCP Fingerprinting，此外，还可以运用深度包检测技术读取设备发送的数据包的内容，推测设备的类型。只需要针对这几项进行伪装，然后观察SafeConnect的行为就可以推测SafeConnect检测用户操作系统的方式。</p>
-<p>经过一番实验，推测SafeConnect服务器的工作原理如下：客户端新设备连进网络的时候，他们是直接不给你互联网接入的。但是他们会监测你的的外出http流量，从http流量中读取User-Agent中的操作系统信息。</p>
-<p>如果发现是他们SafeConnect客户端不支持的系统，比如Linux，iOS，android之类，就把你这个IP地址限制放开。如果是客户端支持的系统，比如Windows，Mac OS，并且你的SafeConnect已经安装了，那么SafeConnect会跟他们服务器通讯把你放开，如果你还没安装SafeConnect，那么就把你跳转到相关页面让你装SafeConnect。</p>
-<p>明白了这一点，解决方法自然就来了：给浏览器安装可以更改User-Agent的插件，把User-Agent里面的操作系统信息改成Linux即可，这样在访问网络的时候，SafeConnect的服务器就会误以为你是Linux系统了。通过给浏览器更改User-Agent，几乎可以完美躲过SafeConnect的法眼，然而美中不足的是如果用多个浏览器，还需要挨个安装插件更改User-Agent，同时有的网站会检测浏览器的版本，如果发现浏览器版本过就会提示不支持需要更新，这样就需要不断地根据浏览器更新手工更改插件里的User-Agent的值。还有一点麻烦的地方是，新设备接入的时候还需要设置新的设备。对我来说有没有设置一个新设备自然很简单，但是经常有时候有客人来，用Windows设备没装SafeConnect就上网导致我家整个路由器被封。有没有简单快捷的方法自动让所有连接到路由器的设备都不受SafeConnect的影响呢？这时候就想到了bettercap。</p>
-<p>Bettercap是一个模块化的开源的中间人攻击框架。使用bettercap只需要几行代码就可以实现劫持整个局域网的流量并把其中的HTTP流量的User-Agent改掉。这样的话，只要家里有客人来，我们就可以打开bettercap，自动把客人的User-Agent改掉，防止客人上网导致家里整个路由器都被断。在局域网中实现中间人攻击的一种常见方法是ARP欺骗。ARP欺骗攻击发起方通过不断向受害者发送伪造的ARP数据包，让受害者误以为自己是网关，这样受害者本来想送到网关的数据包就会错误地送给攻击方，攻击方进而可以篡改数据然后送给真正的网关。要使用bettercap实现User-Agent的伪造，首先需要写一个bettercap的代理模块。Bettercap的代理模块写起来非常简单， <a href="https://github.com/evilsocket/bettercap-proxy-modules" target="_blank" rel="external">这里有很多示例模块</a>，文档在<a href="https://www.bettercap.org/docs/proxying/http.html" target="_blank" rel="external">这里</a>。我写的模块代码如下:<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Osfuscate</span> &lt; BetterCap::Proxy::<span class="title">HTTP::Module</span></span></div><div class="line">    meta(</div><div class="line">        <span class="string">'Name'</span>        =&gt; <span class="string">'Osfuscate'</span>,</div><div class="line">        <span class="string">'Description'</span> =&gt; <span class="string">'Change the operating system in User-Agent string to Linux.'</span>,</div><div class="line">        <span class="string">'Version'</span>     =&gt; <span class="string">'1.0.0'</span>,</div><div class="line">        <span class="string">'Author'</span>      =&gt; <span class="string">"zasdfgbnm"</span>,</div><div class="line">        <span class="string">'License'</span>     =&gt; <span class="string">'GPL3'</span></div><div class="line">    )</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">on_pre_request</span><span class="params">( request )</span></span></div><div class="line">        request[<span class="string">'User-Agent'</span>].gsub!( <span class="regexp">/\(Windows.*?\)/</span>, <span class="string">'(X11; Linux x86_64)'</span> )</div><div class="line">        request[<span class="string">'User-Agent'</span>].gsub!( <span class="regexp">/\(Macintosh.*?\)/</span>, <span class="string">'(X11; Linux x86_64)'</span> )</div><div class="line">        <span class="comment"># return nil to tell the streamer that this module didn't do the request</span></div><div class="line">        <span class="comment"># and therefore the request should be done by the streamer.</span></div><div class="line">        <span class="keyword">return</span> <span class="literal">nil</span></div><div class="line">    <span class="keyword">end</span></div><div class="line"><span class="keyword">end</span></div></pre></td></tr></table></figure></p>
-<p>其中<code>on_pre_request</code>函数在请求发生前会被调用，我们只需要在这里把请求中User-Agent的信息中的操作系统给替换成Linux就行了。这里需要注意的是，在函数的结尾需要返回<code>nil</code>，用来告诉bettercap请求还没有被执行，这样bettercap才会去执行请求。</p>
-<p>有了这个代理模块，要想部署，只需要执行<code>bettercap–proxy-module 模块文件名</code>命令就可以了，不需要手动配置iptables这些东西, 非常简单快捷。上图：<br><img src="/2017/07/01/我与学校SafeConnect软件斗智斗勇的经历/ua-windows.png" alt="这是局域网内的一台Windows机器User-Agent中的操作系统信息" title="这是局域网内的一台Windows机器User-Agent中的操作系统信息"><br><img src="/2017/07/01/我与学校SafeConnect软件斗智斗勇的经历/bettercap.png" alt="这是bettercap软件的运行界面" title="这是bettercap软件的运行界面"><br><img src="/2017/07/01/我与学校SafeConnect软件斗智斗勇的经历/ua-changed.png" alt="这是bettercap运行时局域网内这台Windows机器的User-Agent中的操作系统信息" title="这是bettercap运行时局域网内这台Windows机器的User-Agent中的操作系统信息"></p>
-<p>从图中可见User-Agent信息已经被成功修改掉了，大功告成。</p>
-<p>最后说再来一句，这个工作其实稳定的解决方法是直接在路由器跟网口中间加一个电脑用来做网关来负责User-Agent的修改，这样网络会比ARP欺骗的解决方案要稳定好多。这里之所以选择ARP欺骗的方案主要是因为简单快速不需要拔网线不需要设置网关。另外，如果你已经有一台已经设置好了的网关服务器，bettercap同样可以用来完成我们想要的任务，只需要在网关服务器上执行如下命令<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">bettercap --no-spoofing --no-discovery --proxy-module 模块名</div></pre></td></tr></table></figure></p>
-<p>程序执行的界面类似，这里就不截图了。</p>
-]]></content>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
     
-    <summary type="html">
-    
-      &lt;p&gt;&lt;strong&gt;版权信息：博主就是本文原创作者，但是本文最早发布于&lt;a href=&quot;http://www.freebuf.com/news/topnews/125994.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;FreeBuf&lt;/a&gt;，并属FreeBuf原创奖励计划，如需转载请联系FreeBuf。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;故事是这样的，本文作者读书的学校，IT部门要求我们如果使用Windows或者Mac OS要连接学校网络的话，必须安装SafeConnect客户端。这个客户端干的事情就是监视你的系统，确保你安装、启用并及时更新杀毒软件，确保你及时更新电脑上的Flash跟Java，确保你不使用P2P软件。然而我一直很不喜欢这种被监视的感觉，感觉这是侵犯了我的人权，况且我很少用P2P来下载盗版内容，偶尔用P2P一直都是用来下载Linux的安装镜像的，这种宁可错杀一千也不放过一个的做法实在是让人难以忍受。再加上学校的IT部门的人非常官僚，自己还没啥技术，曾经有同学找他们备份数据结果数据没备份成他们反而把分区表给搞坏了，这就让我坚定了跟他们斗争到底的想法，刚好也可以打发业余时光。由于SafeConnect客户端不支持Linux系统，同时学校中Linux用户的数量相当多，所以Linux系统不需要安装任何客户端，直接就能访问网络，这是一个关键性的切入点。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="信息安全" scheme="https://zasdfgbnm.github.io/categories/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8/"/>
-    
-    
-      <category term="SafeConnect" scheme="https://zasdfgbnm.github.io/tags/SafeConnect/"/>
-    
-      <category term="P2P" scheme="https://zasdfgbnm.github.io/tags/P2P/"/>
-    
-      <category term="DLL注入" scheme="https://zasdfgbnm.github.io/tags/DLL%E6%B3%A8%E5%85%A5/"/>
-    
-      <category term="中间人攻击" scheme="https://zasdfgbnm.github.io/tags/%E4%B8%AD%E9%97%B4%E4%BA%BA%E6%94%BB%E5%87%BB/"/>
-    
-      <category term="ARP欺骗" scheme="https://zasdfgbnm.github.io/tags/ARP%E6%AC%BA%E9%AA%97/"/>
-    
-      <category term="逆向工程" scheme="https://zasdfgbnm.github.io/tags/%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/"/>
-    
-      <category term="Hook" scheme="https://zasdfgbnm.github.io/tags/Hook/"/>
-    
-      <category term="User-Agent" scheme="https://zasdfgbnm.github.io/tags/User-Agent/"/>
-    
-      <category term="bettercap" scheme="https://zasdfgbnm.github.io/tags/bettercap/"/>
-    
-  </entry>
+
+  </div>
+
   
-  <entry>
-    <title>能当主力，能入虚拟机，还能随时打包带走，Linux就是这么强大</title>
-    <link href="https://zasdfgbnm.github.io/2017/06/29/%E8%83%BD%E5%BD%93%E4%B8%BB%E5%8A%9B%EF%BC%8C%E8%83%BD%E5%85%A5%E8%99%9A%E6%8B%9F%E6%9C%BA%EF%BC%8C%E8%BF%98%E8%83%BD%E9%9A%8F%E6%97%B6%E6%89%93%E5%8C%85%E5%B8%A6%E8%B5%B0%EF%BC%8CLinux%E5%B0%B1%E6%98%AF%E8%BF%99%E4%B9%88%E5%BC%BA%E5%A4%A7/"/>
-    <id>https://zasdfgbnm.github.io/2017/06/29/能当主力，能入虚拟机，还能随时打包带走，Linux就是这么强大/</id>
-    <published>2017-06-29T14:52:54.000Z</published>
-    <updated>2017-07-18T06:02:33.318Z</updated>
-    
-    <content type="html"><![CDATA[<p><strong>更新日志</strong>：<br>2017-07-18 增加了新的一章：无盘系统，将多处不当使用的术语“rootfs”替换为更贴切的“root”</p>
-<p>===================</p>
-<p>这里介绍一下自己管理自己的Linux桌面的一点经验吧，我觉得还是有不少可取之处的。先来说一下大多数人管理Linux桌面的方法有哪些不方便的地方吧：</p>
-<ul>
-<li>买新电脑了，又得在新电脑上安装Linux，安装各种软件，各种库，各种开发环境，配置各种服务，真麻烦。</li>
-<li>最近一直在用电脑A，干了好多事情安装了好多软件，也配置了不少开发环境跟各种服务，然而处于某种原因，我又要开始使用好久没用过的电脑B了，难道我要把在A上的做的各种配置在B上再重新做一遍？</li>
-<li>在Windows下做着PPT呢，发现需要调出自己之前的程序，然后根据若干组输入跑几个结果画张图好插到PPT里，然而这个程序是在Linux下写的，编译等的过程也严重依赖自己用的Linux环境，重启进Linux拿到结果再回Windows太不方便，想在Windows下配置好环境把自己的程序跑通更不容易。</li>
-<li>要对系统安装某个软件，或者进行一些比较危险的更新操作（要知道Archlinux滚动更新滚挂了太正常了），担心把系统搞挂了，系统备份又实在太麻烦，要真挂了，系统恢复起来更麻烦。</li>
-<li>我一直用Archlinux做主力，然而最近做的某件事情要用某个软件，这个软件官方只给了Ubuntu上的安装方式，Archlinux里面没有相应的包，在Archlinux上手动安装也太不方便。装个Ubuntu，然后暂时用几天Ubuntu吧，也是够折腾的。更何况有时候只是想用一小下而已，怎样才能最小化自己在折腾上浪费的时间呢？</li>
-<li>有的软件官方软件仓库里面没有，而<code>make install</code>的话则会在系统中安装上不被包管理器所管理的文件，将来卸载也不方便，我还是更希望所有的文件都在一个包管理器中管理的。</li>
-<li>听说新版本内核引入了某个牛逼的东西？我就想快速测试一下玩玩，我电脑还有计算在跑着呢，我可不想重启，那就只能用虚拟机尝试了。而且，一定要快速，我可不想为此特地装一个虚拟机。</li>
-</ul>
-<p>上述的这些不方便之处是可以通过自己管理系统时的一些技巧来克服的，本文目的就是来介绍一下这些技巧。通过这些技巧，我们实现的功能是：一台机器上，可以同时安装Windows跟若干Linux系统，Windows下可以通过虚拟机来运行位于本地磁盘的这些Linux系统，而这些Linux系统下也可以通过容器或者虚拟机的方式互相运行。并且这些系统可以非常方便地备份跟删除，也可以随时创建以及运行快照。并且这些Linux系统可以随时打包带走，只需要经过很少的修改，就能直接在U盘或者其他机器上运行。如果要换电脑，或者新装一台电脑，也不需要重新安装系统，只需要把已有的系统同步到新电脑就行。这也正是这篇文章标题的意思。</p>
-<a id="more"></a>
-<p>为了行文的方便，我们假定读者有一台全新的机器，硬盘还没分区，也还没装任何系统。如果已经什么都装好了，而只是想迁移到我这种管理方式的话，我相信读者能够判断这个安装教程中哪些步骤是需要做的哪些步骤是不需要做的。 另外需要注意的是这不是一个手把手的一步一步的教程，中间有一些显然的步骤我就略去不写了，所以希望读者不要照着文章里的的命令不加思考地一条一条粘贴运行，而是要搞明白这些命令的目的是什么，然后根据你自己的情况来做相应的修改。</p>
-<h1 id="分区与子卷"><a href="#分区与子卷" class="headerlink" title="分区与子卷"></a>分区与子卷</h1><p>具体怎么分区我就不说了，随便找个livecd启动进去，然后找到你自己最喜欢的分区程序，按照你的喜好把区分了就好。注意别忘了EFI分区。我这里需要说的是，分区的时候，不论有多少个发行版要安装，总共只给Linux划分两个分区：一个是swap，另一个则是一个大的btrfs分区。那个btrfs分区里面装着所有的文件，包括用户的个人数据，以及所有发行版的rootfs。这两个分区在格式化的时候，一定要给他们取Label，这么做的好处接下来我们很快就会看到。我的习惯是，swap分区的Label我就叫他“swap”，而那个btrfs分区我则叫他“linux”。创建好分区以后，如果格式化工作是在图形的分区管理程序下完成的，那么指定Label是个非常简单的工作，右键属性里面就有。如果是使用命令行工具格式化分区的，则可以使用<code>-L label</code>选项来指定label，比如：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">mkswap -L swap /dev/sdb4</div><div class="line">mkfs.btrfs -L linux /dev/nvme0n1p4</div></pre></td></tr></table></figure></p>
-<p>那个大的btrfs分区上的不同内容是通过btrfs的子卷来管理的，具体来讲就是为自己想安装的每个不同的Linux系统来创建一个单独的子卷。 比如说我电脑上同时安装了Archlinux、Ubuntu、Kali、Debian四个系统，那么的btrfs分区里面就有四个子卷：archlinux、ubuntu、kali、debian。 子卷的创建可以通过<code>btrfs subvolume create &lt;name&gt;</code>命令完成，比如说要创建我这五个子卷，需要做的事情就是：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">mount /dev/disk/by-label/linux /mnt</div><div class="line"><span class="built_in">cd</span> /mnt</div><div class="line">btrfs subvolume create archlinux</div><div class="line">btrfs subvolume create ubuntu</div><div class="line">btrfs subvolume create kali</div><div class="line">btrfs subvolume create debian</div></pre></td></tr></table></figure></p>
-<p>如果你只想装一个发行版，比如archlinux，那么只需要archlinux子卷就够了。另外，如果你想把用户数据单独放在一个子卷里，也是完全可以的，不过这里不推荐多个Linux系统共享同一个家目录，因为不同系统上安装的软件不同，同样的软件版本也不相同，即使版本相同，不同发行版也可能应用了不同的patch，这就导致在一个系统上用户家目录里面产生的配置文件，在另一个系统里无法兼容，产生奇怪的行为。</p>
-<h1 id="系统安装"><a href="#系统安装" class="headerlink" title="系统安装"></a>系统安装</h1><p>创建好分区与子卷，下一步就是安装操作系统了。这里分两种情况来讲：第一种情况是你想要全新安装一个Linux操作系统；第二种情况则是你已经有了某个可用的操作系统了，而只是想把这个操作系统迁移到文章所说的管理方式上。</p>
-<h2 id="全新安装"><a href="#全新安装" class="headerlink" title="全新安装"></a>全新安装</h2><p>如果想要全新安装一个操作系统，安装方式上，作者只推荐纯手工安装，而不是用官方给的安装光盘不断点着“下一步”来进行安装。这么做是为了防止官方安装程序做一些我们不想让他做的事情，比如说自动安装grub。对于Archlinux跟Gentoo来讲，唯一的安装方法就是纯手工安装，所以只要按照官方的教程来就好了。对于deb系的系统，可以使用debootstrap程序。对于其他的发行版，可能会找不到手工安装的教程，这时候可以新建一个虚拟机，在虚拟机中使用官方的安装程序不断点击“下一步”来完成安装，然后按照下一节即将介绍的现有系统迁移教程把系统从虚拟机中迁移到现实机器上；除此之外，读者还可以找到发行版官方提供的安装程序的源代码阅读一下，看明白这些安装程序都在干啥，就知道怎么手工安装了，安装程序的代码还是相对简单的，有时间的读者不妨尝试一下。下面来具体说一下安装过程，这里只介绍Archlinux跟deb系。如果有多个Linux系统需要安装，建议先安装并完全配置好其中一个，让这个系统处于可用并且方便使用的状态，然后再在这个可用的系统中安装其他系统。这里我们假设读者已经完成了分区，创建了对应的子卷，并且把那个btrfs分区挂载在了<code>/mnt</code>上。</p>
-<h3 id="Archlinux的手动安装"><a href="#Archlinux的手动安装" class="headerlink" title="Archlinux的手动安装"></a>Archlinux的手动安装</h3><p>Archlinux的手动安装主要还是看<a href="https://wiki.archlinux.org/index.php/Installation_guide" target="_blank" rel="external">官方教程</a>。分区的时候注意按照上文介绍的方法。非常关键的<code>pacstrap</code>那一步注意使用如下命令安装到子卷里，而不是整个btrfs分区中:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pacstrap -d /mnt/archlinux base</div></pre></td></tr></table></figure></p>
-<p>至于fstab，就不要使用教程中的方法来生成了，我们的管理方式比较非常规，还是自己写fstab比较好。bootloader也要按照本文下文说的方式来安装跟配置。至于其他的设置键盘、设置网络、设置时区等操作，照着教程来就行。</p>
-<h3 id="deb系的手动安装"><a href="#deb系的手动安装" class="headerlink" title="deb系的手动安装"></a>deb系的手动安装</h3><p>deb系的系统网上找到的教程都是使用发行版自带的安装程序的教程，并没有像Archlinux那么详细的手动安装教程。因为我们想要手动安装，所以我们就不参照网上的deb系的安装教程了。但是我们还是有教程可以参照的，那就是Archlinux的wiki里面<a href="https://wiki.archlinux.org/index.php/Systemd-nspawn#Create_a_Debian_or_Ubuntu_environment" target="_blank" rel="external">关于systemd-nspawn的教程</a>，这个教程里面有一节介绍如何使用debootstrap安装Debian或者Ubuntu。具体安装过程请参照上述教程，其中关键命令如下：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">debootstrap --arch amd64 zesty /mnt/ubuntu http://archive.ubuntu.com/ubuntu/</div></pre></td></tr></table></figure></p>
-<p>值得一提的是，我们安装deb系的发行版并不一定要使用deb系的livecd，任何能够安装debootstrap程序的livecd都是可以的。比如说我们完全可以使用Archlinux的livecd来启动，然后安装debootstrap并通过debootstrap来安装Ubuntu。</p>
-<p>注意的是，debootstrap并不会像官方安装程序那样安装一个完整齐全开袋即食的操作系统，而只是安装最基本的软件包，读者需要根据自己的情况单独安装桌面环境等的软件包。同时fstab跟bootloader也要根据本文的方法自己配置。</p>
-<h2 id="现有系统迁移"><a href="#现有系统迁移" class="headerlink" title="现有系统迁移"></a>现有系统迁移</h2><p>Linux系统的迁移其实非常简单，无非就是把根目录（下文称作root）的文件全都拷贝到目的地即可。不过这个过程虽然看似简单，但是还是有一些需要注意的东西的。比如说对于符号链接，如果处理不当，则会不小心把符号链接搞成实体文件，这就不好了。再比如说，文件的权限等元数据的问题，如果处理不当，可能会导致拷贝过程中元数据的丢失。这两种问题，都有可能会导致系统不能正常运行。还有一个需要注意的地方就是，正常运行的操作系统里，会有/proc、/dev等目录，这些目录都是单独的虚拟文件系统，是不需要拷贝的，也是无法拷贝的。</p>
-<p>我们现在假设用户想要把位于A的Ubuntu系统迁移到目标子卷<code>/mnt/ubuntu</code>去。其中，A可能位于虚拟机中，可能位于另一台电脑上，也可能位于本地磁盘。对系统进行迁移，大方向上来讲，需要做的有两步：</p>
-<ol>
-<li>挂载相应分区，设置ssh，保证我们能够访问到A。</li>
-<li>使用<code>rsync</code>或者<code>btrfs send</code>命令来把数据从A发送到目标子卷中去。</li>
-</ol>
-<p>第一步具体怎么做就不说了，分三种情况简单几句话概括一下怎么做：</p>
-<ul>
-<li>如果只是一个分区的话，mount就可以了</li>
-<li>如果是另一台机器，把那台机器配置好ssh，保证root用户可以用ssh访问</li>
-<li>如果是虚拟机，有两种选择，一种是想办法挂载虚拟机的磁盘镜像，然后像情况1那样处理；另一种则是配置好网络跟ssh，像情况2那样处理。具体采取哪种措施请读者根据自己的情况来自行决定。</li>
-</ul>
-<p>第二步我们来分别介绍<code>rsync</code>跟<code>btrfs send</code>两种方法。</p>
-<p><code>rsync</code>的方法<a href="https://wiki.archlinux.org/index.php/full_system_backup_with_rsync" target="_blank" rel="external">这里有教程</a>可以参照。我们现在假设A的ip地址为<code>192.168.88.3</code>。则只需执行如下命令即可：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rsync -aAXv --exclude=&#123;<span class="string">"/dev/*"</span>,<span class="string">"/proc/*"</span>,<span class="string">"/sys/*"</span>,<span class="string">"/tmp/*"</span>,<span class="string">"/run/*"</span>,<span class="string">"/mnt/*"</span>,<span class="string">"/media/*"</span>,<span class="string">"/lost+found"</span>&#125; root@192.168.88.3:/ /mnt/ubuntu</div></pre></td></tr></table></figure></p>
-<p>这里提醒读者注意自己系统上是否还有其他不想要同步的文件，记得一并排除掉。</p>
-<p><code>btrfs send</code>只在A的root也是btrfs的情况下才能使用。<a href="https://btrfs.wiki.kernel.org/index.php/Incremental_Backup" target="_blank" rel="external">这个方法的教程参见这里</a>。首先需要做的是在A机器上给root创建一个只读快照（注意下面命令是在A机器上执行的）：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">btrfs subvolume snapshot -r / /ubuntu</div></pre></td></tr></table></figure></p>
-<p>注意上面命令中快照的名字要和目标子卷的名字相同，这样可以省去将来改名的麻烦。然后就可以使用<code>btrfs send</code>命令来把快照/ubuntu中的内容发送到目的地了，在这之前我们需要暂时删除我们分区的时候创建的ubuntu子卷，这个子卷会在接收过程中自动重新创建：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">btrfs subvolume delete /mnt/ubuntu</div><div class="line">ssh root@192.168.88.3 btrfs send /ubuntu | btrfs receive /mnt</div></pre></td></tr></table></figure></p>
-<p>最后在A机器上把刚刚创建的快照删除就可以了<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">btrfs subvolume delete /ubuntu</div></pre></td></tr></table></figure></p>
-<h1 id="bootloader与fstab"><a href="#bootloader与fstab" class="headerlink" title="bootloader与fstab"></a>bootloader与fstab</h1><p>系统装好了，我们的fstab还没设置，启动管理器也还没安装配置。下面来讲讲怎么配置这两样东西。我们之前说过一定要给分区取一个Label，玄机在这里。如何在虚拟机中直接运行本地磁盘上安装的Linux，以及如何能把一个系统直接进行打包带走而不需要更改太多配置，关键也在这里。</p>
-<h2 id="fstab"><a href="#fstab" class="headerlink" title="fstab"></a>fstab</h2><p>先来说说fstab，fstab总共有五列，分别为fs、mountpoint、type、opts跟dump/pass。这五列分别为什么意思、以及fstab该怎么填，网上一查便知，在此不再赘述。这里只说我们需要做的跟常规不一样的地方。</p>
-<p>第一个要注意的事情是，大家在填写fstab的时候，通常喜欢在fs那一列填写类似<code>/dev/sda4</code>或者<code>UUID=d5acc217-d524-4a2d-a937-bad945a047b2</code>，而在这里这样是不行的，这里我们填写的是形如<code>/dev/disk/by-label/linux</code>这样的东西。也就是说，我们的fstab里面是通过分区的Label来找分区的。这么做的原因是，我们希望我们的root不光能在这台机器上启动，还希望它能在虚拟机的环境中，或者当我们把root打包带走同步到别的机器上的时候，也能正常启动。在这台机器上root所在的分区叫做<code>/dev/sda4</code>，在别的机器上或者虚拟机里就不一定还叫<code>/dev/sda4</code>了。但是我们只要遵守自己的命名规则，所有机器上的这些分区我们都取相同的Label，那么我们的fstab就是放之四海而皆准的，不需要为不同的环境而更改。</p>
-<p>第二个需要注意的问题是，不要填写root的条目。这种做法跟通常发行版或者其他用户的默认做法是非常不相同的。为了理解这一点，先来说说Linux系统的启动过程。通常情况下，Linux启动的时候，首先由bootloader把内核装载到内存，并向内核传递参数告诉内核root的位置。接下来内核就会根据传递的参数，以只读方式挂载root，并执行root中的init程序。init程序会调用相应的初始化程序执行各种初始化操作。其中一项初始化操作就是根据fstab的配置，来重新以读写方式挂载root，并且挂载fstab里面配置的其他各个分区到指定位置。明白了Linux启动的过程，我们就知道，fstab里面的root那一行其实不是必须的。删掉了root那一行，我们只需要通过修改bootloader传递给内核的参数，就可以告诉内核直接以读写而不是只读的方式挂载root。</p>
-<p>那么，我们在写fstab的时候不写root那一项有啥好处呢？好处就是，我们不仅希望我们的系统能在裸机上用，还希望我们的系统能在虚拟机上用。在下文设置qemu虚拟机的时候，我们会以virtfs的方式把我们的子卷传递给虚拟机，这个时候root就已经不再是<code>/dev/disk/by-label/linux</code>了，如果我们把root的挂载方式硬编码到fstab里面，那么会导致init程序的失败，进而无法启动。</p>
-<p>另外有一点值得一提的小技巧是，很多时候我们还有别的一些个分区想要自动挂载。问题在于，这些分区在虚拟机环境中，并不一定是存在的，这就会导致启动的时候由于无法挂载而启动失败。其实系统的设计者早就考虑到这个问题了。如果你不希望fstab中的某些条目自动挂载，在选项里面增加<code>noauto</code>即可。如果你希望一些条目自动挂载，但是这些条目不是那么重要，即使挂载失败也不希望这些条目导致启动失败，可以在选项中增加<code>nofail</code>。这两个选项真的是给我们的系统管理工作提供了非常大的方便。比如说我们可能会在fstab中增加<code>/dev/disk/by-label/swap</code>的条目，以便开机自动将这个分区设置为交换分区供系统使用。然而后面我们会看到，我们设置虚拟机的时候，这个分区在虚拟机环境下，并不一定是可用的。这种情况下，我们希望系统在找不到这个分区的时候直接忽略错误不用swap便是，而不是报错拒绝启动。</p>
-<p>说了这么多，直接贴一个fstab的例子好了：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">tmpfs                  		/tmp	tmpfs	defaults		0 0</div><div class="line">/dev/disk/by-label/swap		none	swap	defaults,nofail		0 0</div></pre></td></tr></table></figure></p>
-<h2 id="bootloader"><a href="#bootloader" class="headerlink" title="bootloader"></a>bootloader</h2><p>再来说说启动管理器，这里作者推荐的启动管理器是refind，<a href="http://www.rodsbooks.com/refind/installing.html" target="_blank" rel="external">安装教程官网有</a>，在此不赘述。这里只讲一下启动项怎么写。先贴示例代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">menuentry archlinux &#123;</div><div class="line">	icon EFI/refind/icons/os_arch.png</div><div class="line">	volume linux</div><div class="line">	loader archlinux/boot/vmlinuz-linux</div><div class="line">	options &quot;root=/dev/disk/by-label/linux rootflags=subvol=archlinux rw&quot;</div><div class="line">	initrd archlinux/boot/initramfs-linux.img</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>其中第三行的volume用来指定内核存放的分区，此分区可以通过多种方式来指定，比如通过分区的GUID，但是对我们来说最重要的是可以通过文件系统的Label来指定。我们的root分区Label是”linux”，所以这一行写作<code>volume linux</code>。</p>
-<p>接下来就是指定内核位置、内核参数跟initramfs的位置了。其中loader用来指定内核位置，options用来指定内核参数，initrd则用来指定initramfs的位置。示例中的是Archlinux系统，内核是archlinux子卷中的<code>boot/vmlinuz-linux</code>文件，所以写作<code>loader archlinux/boot/vmlinuz-linux</code>。类似，initrd那一行则写作<code>initrd archlinux/boot/initramfs-linux.img</code>。至于内核参数，<code>root=/dev/disk/by-label/linux</code>告诉内核我们的root所在的分区，<code>rootflags=subvol=archlinux</code>告诉内核挂载名为archlinux的子卷，<code>rw</code>则告诉内核以读写方式挂载。对于Ubuntu系统，这三行应该写作：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">loader ubuntu/vmlinuz</div><div class="line">options &quot;root=/dev/disk/by-label/linux rootflags=subvol=ubuntu rw&quot;</div><div class="line">initrd ubuntu/initrd.img</div></pre></td></tr></table></figure></p>
-<p>细心的读者可能已经发现，我们的refind的配置文件中在指定分区的时候用的全是他们的Label，这就保证了这个配置文件的普适性，换台电脑，只要你用同样的管理方式，同样的命名习惯，配置文件里面的东西动都不用动，直接拷贝过去就行。</p>
-<h1 id="系统的备份与恢复以及快照的应用"><a href="#系统的备份与恢复以及快照的应用" class="headerlink" title="系统的备份与恢复以及快照的应用"></a>系统的备份与恢复以及快照的应用</h1><p>由于使用了btrfs的动态卷，所以备份恢复工作做起来非常简单。备份系统只需要创建快照即可：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">cd</span> /mnt</div><div class="line">btrfs subvolume snapshot archlinux backup</div></pre></td></tr></table></figure></p>
-<p>至于恢复，其实我们根本不需要恢复，直接把快照作为root用就行。我们只需要去refind的配置文件里面，把相应的启动项改改即可。比如说对于Archlinux而言，只需要改成：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">menuentry archlinux &#123;</div><div class="line">	icon EFI/refind/icons/os_arch.png</div><div class="line">	volume linux</div><div class="line">	loader backup/boot/vmlinuz-linux</div><div class="line">	options &quot;root=/dev/disk/by-label/linux rootflags=subvol=backup rw&quot;</div><div class="line">	initrd backup/boot/initramfs-linux.img</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>如果有强迫症，觉得root名字不叫archlinux很不爽，那其实改名也很简单:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">cd</span> /mnt</div><div class="line">btrfs subvolume delete archlinux</div><div class="line">btrfs subvolume snapshot backup archlinux</div></pre></td></tr></table></figure></p>
-<p>其实，btrfs的快照功能不仅可以用来备份与恢复系统，还有很多非常灵活的运用的。比如说我想在系统里面安装一个巨大而又混乱的软件，这个软件我只想用几天干一件事情，干完这件事情我就不想用了。问题是，这个软件在官方的软件仓库并没有，要安装，我只能使用软件提供的安装程序来安装，然而软件并没有提供卸载程序，或者卸载程序卸载的很不彻底，会在系统残留垃圾。我想用这软件，然而又不想脏了我的系统，这该怎么办？很简单：创建一个快照，新增加一条以快照为root的启动项，要用软件了就启动到快照中去，用完这个软件以后把快照删除即可。再比如说，我想要搞个虚拟机跟实体机一起来测试某个东西（比如说测试某些网络协议、测试某些集群管理软件等），这个时候我根本没必要重新用安装光盘去装一个虚拟机，只需要创建一个快照，然后把快照作为虚拟机的root启动即可，具体方法下文会介绍，在此不多说。当然，快照的应用还远远不止我说的这些，更多好玩的应用还待读者自己探索。</p>
-<h1 id="Windows下访问Linux"><a href="#Windows下访问Linux" class="headerlink" title="Windows下访问Linux"></a>Windows下访问Linux</h1><p>从文章的刚开头我们就说，有时候我们是有在Windows下运行本地安装的Linux的需求的。这个需求可以通过VirtualBox来满足，只需要在VirtualBox中使用本地磁盘来作虚拟磁盘即可。说起来简单，但是实现起来还是需要折腾一下子的。</p>
-<p>首先我们需要新建一个虚拟机，具体过程不多说，一路“下一步”就行了，唯一需要注意的是，在创建虚拟磁盘的那一步，选择“不添加虚拟硬盘”：<br><img src="/2017/06/29/能当主力，能入虚拟机，还能随时打包带走，Linux就是这么强大/virt_hdd.png" alt="virt_hdd.png" title=""></p>
-<p>这里我的虚拟机取名为“Linux”。创建完虚拟机了以后，就需要把本地磁盘设置为虚拟磁盘了。VirtualBox只能通过命令来做这件事情，<a href="http://www.serverwatch.com/server-tutorials/using-a-physical-hard-drive-with-a-virtualbox-vm.html" target="_blank" rel="external">教程可以在这里找到</a>。首先要做的是寻找我们安装Linux的磁盘的编号，这个可以在系统自带的磁盘管理程序中找到，在我的机器上这个磁盘编号为2：<br><img src="/2017/06/29/能当主力，能入虚拟机，还能随时打包带走，Linux就是这么强大/dskmgr.png" alt="dskmgr.png" title=""><br>知道了磁盘的编号，就可以创建虚拟盘了。这里我们使用的命令如下，注意使用管理员身份运行：<br><figure class="highlight powershell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">VBoxManage internalcommands createrawvmdk -filename <span class="string">"C:\Users\gaoxiang\VirtualBox VMs\Linux\localdisk.vmdk"</span> -rawdisk \\.\PhysicalDrive2</div></pre></td></tr></table></figure></p>
-<p>有了虚拟磁盘了，就可以将虚拟磁盘添加到虚拟机中去了：<br><img src="/2017/06/29/能当主力，能入虚拟机，还能随时打包带走，Linux就是这么强大/newdisk.png" alt="newdisk.png" title=""></p>
-<p>虚拟磁盘设置好了，最后一步就是设置EFI了。由于我们之前在分区的时候给文件系统都赋予了Label，并且在refind设置的时候也是用的Label来指定分区，所以同一套refind的配置在虚拟机上也能用。因此我们不需要单独给虚拟机安装bootloader，而是直接用我们之前安装在物理磁盘上的EFI分区中的refind就行。VitualBox默认是不开启EFI的，我们需要在虚拟机的系统设置里面手动勾选EFI：<br><img src="/2017/06/29/能当主力，能入虚拟机，还能随时打包带走，Linux就是这么强大/efi.png" alt="efi.png" title=""><br>为了要让VirtualBox自动启动refind，还要对EFI的分区做一些简单的设置，<a href="https://wiki.archlinux.org/index.php/VirtualBox#Installation_in_EFI_mode" target="_blank" rel="external">设置的教程参考这里</a>。设置的时候一定要注意，这些设置一定要是通用的，即同一份文件既能在物理机上正常工作也能在虚拟机上正常工作，不要改完了设置以后虚拟机上能跑了物理机却挂了，这就不好玩了。VirtualBox的EFI在启动的时候会优先选择<code>/EFI/BOOT/BOOTX64.EFI</code>，如果找不到的话，才会启动EFI分区根目录下的<code>startup.nsh</code>中指定的bootloader。知道了这一点，为了实现自动启动refind，首先需要检查一下<code>/EFI/BOOT/BOOTX64.EFI</code>这个文件是否存在，若存在，备份并删除之：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">cd</span> EFI/BOOT</div><div class="line">mv bootx64.efi bootx64-backup.efi</div></pre></td></tr></table></figure></p>
-<p>然后就是在EFI分区根目录下新建一个<code>startup.nsh</code>了，这个文件只需要一行，内容如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">\EFI\refind\refind_x64.efi</div></pre></td></tr></table></figure></p>
-<p>一切设置完毕，运行虚拟机，就能看到我们熟悉的refind界面了：<br><img src="/2017/06/29/能当主力，能入虚拟机，还能随时打包带走，Linux就是这么强大/refind.png" alt="refind.png" title=""><br>打开其中的Ubuntu系统，测试一切正常就大功告成了：<br><img src="/2017/06/29/能当主力，能入虚拟机，还能随时打包带走，Linux就是这么强大/ubuntu.png" alt="ubuntu.png" title=""></p>
-<p>当然，要在虚拟机中使用，还有一些细节性的工作要处理，比如安装VirtualBox的guest需要的相应的内核模块等等，这些在此不谈，读者使用过程中如果发现少啥了，自己装上便是。</p>
-<h1 id="Linux下不同发行版的互相访问"><a href="#Linux下不同发行版的互相访问" class="headerlink" title="Linux下不同发行版的互相访问"></a>Linux下不同发行版的互相访问</h1><p>我们已经成功地在Windows下运行Linux了，下一步就是想办法在一个Linux系统下访问其他Linux了。由于这些系统都是Linux，而且都在同一个文件系统里面，所以如果只是想要访问一下里面的文件的话，挂载了用就行了。但是很多时候我们还是有需要来运行其他系统里面安装的程序，或者对那个系统进行管理的。应对这种需求有两种解决方案：容器跟虚拟机。</p>
-<p>可能很多读者并不了解这两者的区别，这里简单介绍一下。粗略来讲，虚拟机是通过软件的方式虚拟出一套硬件环境来，并在这套硬件环境中启动内核，然后内核会进行一个完整的开机过程，包括进行相应的初始化，加载init程序等。相比之下，容器则要轻量很多。容器并不会虚拟出自己的硬件环境，也不会额外加载一个内核。容器所做的，就是在现有内核上，运用namespace来创建出一套独立的进程PID、挂载点、网络接口、用户ID等等，由于不同namespace中的这些个ID之类的标识符都是独立的，所以不同namespace中的进程是互相之间看不到对方的，虚拟出来的环境乍看上去就跟在单独运行的一个系统一样，同样有PID为1的init进程，有自己一套独立的root，等等。虚拟机的优点是更不容易被突破，安全性更好，可以使用自己的内核，但是效率也更低。容器的优点是轻便效率高，但是安全性就要稍差一些，也没法使用定制内核。</p>
-<h2 id="容器"><a href="#容器" class="headerlink" title="容器"></a>容器</h2><p>Linux下大家最熟悉的容器就是chroot了，但是作者并不喜欢chroot，主要原因有两点：</p>
-<ul>
-<li>/proc、 /dev等东西不会自动挂载，每次手动挂载挂的心好累</li>
-<li>没有一个相对完整的开机过程，好多我希望自动启动的服务并不会运行起来</li>
-</ul>
-<p>基于上面的原因，作者在这里推荐的容器是systemd-nspawn。关于systemd-nspawn的介绍跟使用教程，<a href="https://wiki.archlinux.org/index.php/Systemd-nspawn" target="_blank" rel="external">推荐看这里</a>。systemd-nspawn的使用非常简单，假设你的linux分区已经mount到了/mnt上去了，那么你只需要下面步骤就能启动一个systemd-nspawn容器（以Debian为例）：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">cd</span> /mnt/debian</div><div class="line">systemd-nspawn -b</div></pre></td></tr></table></figure></p>
-<p>然后就能看到刷刷刷的开机界面了，真的是非常的方便快捷。这里还有一点小技巧是，如果嫌每次开容器都要把linux分区挂载到/mnt上太麻烦，可以在<code>/var/lib/machines</code>里面为每个系统新建一个目录，然后在fstab里面设置一下自动把相应的子卷挂载进去：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">/dev/disk/by-label/linux        /var/lib/machines/kali          btrfs           defaults,nofail,noatime,discard,subvol=kali            0 0</div><div class="line">/dev/disk/by-label/linux        /var/lib/machines/debian        btrfs           defaults,nofail,noatime,discard,subvol=debian          0 0</div><div class="line">/dev/disk/by-label/linux        /var/lib/machines/ubuntu        btrfs           defaults,nofail,noatime,discard,subvol=ubuntu          0 0</div></pre></td></tr></table></figure></p>
-<p>这么做的好处是，根目录位于<code>/var/lib/machines</code>的系统，在启动systemd-nspawn的时候可以直接使用<code>-M</code>选项来指定系统，而不需要进入相应目录。比如如果想启动Ubuntu系统：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemd-nspawn -b -M ubuntu</div></pre></td></tr></table></figure></p>
-<h2 id="虚拟机"><a href="#虚拟机" class="headerlink" title="虚拟机"></a>虚拟机</h2><p>如果只是想运行一下其他系统里面的程序，那么容器完全就够用了，但是有的时候我们还是需要玩玩不同的内核的，这就必须得用虚拟机了。通常情况下，大家用虚拟机，都是新建一个磁盘镜像，然后插入安装光盘，然后把光盘安装到镜像上。这么做的坏处，一个是访问镜像中的文件不方便，另一个是，我们在本地已经有安装过若干系统了，不去充分利用一下这些而去再重新往镜像里面安装那实在是舍近求远。那我们就来找一个把子卷当成虚拟机root的方法。困难在于，虚拟机是个很独立的东西，是无法直接访问宿主机的文件系统的。然而幸运的是，Linux的内核虚拟化方案KVM提供了一个把本地文件系统传递给虚拟机的解决方案，用到的东西叫做VirtFS，<a href="http://wiki.qemu.org/Documentation/9psetup" target="_blank" rel="external">相关的文档见这里</a>。</p>
-<p>好消息是，VirtFS是可以作为root的。但是要能正常挂载VirtFS，内核必须要有相应的驱动才行。这里有两种方法可以做到这一点。如果你是自己编译内核的话，那么建议直接将相应的驱动编译进内核而不是模块。根据官网的指示，涉及到的内核配置如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">CONFIG_NET_9P=y</div><div class="line">CONFIG_NET_9P_VIRTIO=y</div><div class="line">CONFIG_9P_FS=y</div><div class="line">CONFIG_9P_FS_POSIX_ACL=y</div></pre></td></tr></table></figure></p>
-<p>如果使用的是发行版提供的内核的话，那么可以修改initramfs的相关设置保证9p、9pnet、9pnet_virtio三个modules能被安装到initramfs里面去。这里以Ubuntu做guest为例，具体做法是修改Ubuntu系统中的<code>/etc/initramfs-tools/modules</code>文件，增加下面三行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">9p</div><div class="line">9pnet</div><div class="line">9pnet_virtio</div></pre></td></tr></table></figure></p>
-<p>然后重新生成initramfs即可：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">update-initramfs -u</div></pre></td></tr></table></figure></p>
-<p>内核驱动设置好了，就可以启动qemu虚拟机了，这里假定Ubuntu的root已经被mount到了<code>/var/lib/machines/ubuntu</code>：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">qemu-system-x86_64 -<span class="built_in">enable</span>-kvm -m 16G -kernel /var/lib/machines/ubuntu/vmlinuz -initrd /var/lib/machines/ubuntu/initrd.img -virtfs <span class="built_in">local</span>,id=root9p,path=/var/lib/machines/ubuntu,security_model=passthrough,mount_tag=root9p -nographic -append <span class="string">'root=root9p rw rootfstype=9p rootflags=trans=virtio console=ttyS0 init=/lib/systemd/systemd'</span></div></pre></td></tr></table></figure></p>
-<p>最后放一张成功的截图：<br><img src="/2017/06/29/能当主力，能入虚拟机，还能随时打包带走，Linux就是这么强大/qemu-ubuntu.png" alt="qemu-ubuntu.png" title=""></p>
-<h1 id="无盘系统"><a href="#无盘系统" class="headerlink" title="无盘系统"></a>无盘系统</h1><p>在某些特定的应用场景中，无盘系统用起来还是有不少方便之处的。尤其对于计算机集群而言，使用无盘系统不光能节省购买硬盘的成本，还能大大简化集群的管理。虽然我们并没有集群要管理，但是做一个无盘系统放在硬盘上用来代替livecd，在需要的时候进行一些系统恢复类的操作还是不错的。对同时安装有多个Linux的同学来说，其实用到livecd的时候并不多，偶尔一个系统出故障了，进其他系统把故障系统修复了就好。但是有些操作还是不得不用livecd的，比如要调整Linux分区的大小跟位置，这个分区就不能处于挂载状态，这就不得不用到livecd了。相比于livecd，自己做的无盘系统的好处主要是可定制性。举个不少人遇到过的实际例子来说：系统出故障了，进livecd修复系统，当试图使用vim更改某配置文件的时候，系统提示说vim并没有安装，想要安装，系统又提示说文件系统是只读的，无法安装。其实没有vim还只是小事，用vi或者nano将就一下也就过去了。但是如果自己千辛万苦下载并刻录livecd，却发现自己修复系统必备的软件没有且不能安装，那估计砸电脑的心都有了吧。既然livecd这么不好用，那为什么不搞一个跟自己平时使用的桌面一模一样的无盘系统呢？</p>
-<p>要做无盘系统，一种做法是在另一台机器上搞个nfs，然后在本机启动的时候用nfs当做root来启动（需要在内核配置中开启<code>ROOT_NFS</code>选项），这种做法优点是内存占用相对较小（跟作者接下来要介绍的方法相比简直是小多了），但是配置起来比较麻烦，而且网络延迟跟带宽也严重制约系统的性能。由于作者的电脑内存有128G之多，可以随便挥霍不需要节约内存，并且作者只想简单粗暴地把自己平时使用的桌面做成无盘系统来启动，并不想多折腾。所以，作者最终采用的方案是基于initramfs的。要想理解制作过程，需要先了解几个术语：</p>
-<h2 id="ramfs、tmpfs、rootfs以及initramfs"><a href="#ramfs、tmpfs、rootfs以及initramfs" class="headerlink" title="ramfs、tmpfs、rootfs以及initramfs"></a>ramfs、tmpfs、rootfs以及initramfs</h2><p>要想理解这个方案的工作原理，需要先了解一下本小节标题中的这几个术语。<a href="https://www.kernel.org/doc/Documentation/filesystems/ramfs-rootfs-initramfs.txt" target="_blank" rel="external">这几个术语在内核的官方文档中有很好的解释</a>，在这里我们只做一个简单的概括。</p>
-<p>首先要从Linux的磁盘缓存机制说起。程序访问文件的时候，Linux会把文件读到内存中缓存起来。磁盘缓存中的文件，如果没被修改过，或者被修改过但是改动已经从缓存同步到磁盘中去了，这种情况下内核会把对应的磁盘缓存标记为干净（clean）的。对于被修改过，但是还没来得及同步到磁盘的文件，内核会将其标记为脏（dirty）的。当Linux内存不足，需要释放内存的时候，Linux会将磁盘缓存中的一些干净的部分释放掉，从而将内存挪作他用。ramfs是一个虚拟的文件系统，直观上来讲，它相当于直接把磁盘缓存给挂载到相应的节点上去了：它其中的文件只存活在磁盘缓存中。并且由于没有物理磁盘可以将数据同步出去，所以这些文件的缓存始终是脏的，这也保证了这些文件不会被内核释放掉。而tmpfs则是对ramfs的一个扩展，相比于ramfs，它允许限制文件系统的大小，也允许数据被搬运到swap中去。</p>
-<p>rootfs也是一个虚拟的文件系统，它是专门在启动的时候使用的一个特殊的ramfs。要想理解rootfs，需要了解Linux内核的启动过程。这个过程位于内核源码<code>init/main.c</code>文件中的<code>kernel_init</code>函数中，有兴趣的读者可以读一下以便深入了解。简单概括就是：Linux启动的时候，会创建一个rootfs，并把根目录“/”挂载为rootfs。这个rootfs将会伴随Linux终生：跟init进程无法被终止道理类似，rootfs是无法被卸载的。rootfs创建好以后，Linux内核会把bootloader提供的initramfs文件中的内容解压到rootfs中去，如果解压好的文件中能找到<code>/init</code>或者用户通过<code>rdinit=</code>内核参数指定的其他init程序，那么内核会执行这个init程序，并将接下来的初始化工作（比如挂载真正的root、删除旧的rootfs中的内容以节约内存、执行真正的root中的init程序）交由这个init程序负责。如果此时rootfs中无法找到相应的init程序，Linux就会尝试挂载真正的root，并执行root中的init程序。</p>
-<h2 id="基于initramfs的无盘系统制作"><a href="#基于initramfs的无盘系统制作" class="headerlink" title="基于initramfs的无盘系统制作"></a>基于initramfs的无盘系统制作</h2><p>了解了上述的原理，我们的无盘系统制作思路也就清晰了：我们直接把自己的桌面打包成一个cpio，然后作为initramfs提供给内核，然后通过<code>rdinit</code>参数告诉内核启动<code>systemd</code>即可。具体做法，这里就以Ubuntu为例，并假定Linux分区被挂载在<code>/mnt</code>中。首先需要把我们的桌面制作成一个cpio包：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">cd</span> /mnt/ubuntu</div><div class="line">find -mindepth 1 -<span class="built_in">printf</span> <span class="string">'%P\0'</span> | LANG=C bsdcpio -0 -o -H newc | xz -T 21 -9e --check=crc32 &gt; ../ubuntu.cpio.xz</div></pre></td></tr></table></figure></p>
-<p>其中xz命令中的线程数跟压缩比请根据自己的实际情况设置合适的值。另外注意如果内存太小装不下整个桌面，那么这种方法是不可能成功的。有了cpio文件，要想启动无盘系统，只需要在refind中增加相应的菜单条目即可：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">menuentry Ubuntu-diskless &#123;</div><div class="line">	icon EFI/refind/icons/os_ubuntu.png</div><div class="line">	volume linux</div><div class="line">	loader ubuntu/vmlinuz</div><div class="line">	options &quot;rdinit=/lib/systemd/systemd&quot;</div><div class="line">	initrd ubuntu.cpio.xz</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p><em>全剧终</em></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;&lt;strong&gt;更新日志&lt;/strong&gt;：&lt;br&gt;2017-07-18 增加了新的一章：无盘系统，将多处不当使用的术语“rootfs”替换为更贴切的“root”&lt;/p&gt;
-&lt;p&gt;===================&lt;/p&gt;
-&lt;p&gt;这里介绍一下自己管理自己的Linux桌面的一点经验吧，我觉得还是有不少可取之处的。先来说一下大多数人管理Linux桌面的方法有哪些不方便的地方吧：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;买新电脑了，又得在新电脑上安装Linux，安装各种软件，各种库，各种开发环境，配置各种服务，真麻烦。&lt;/li&gt;
-&lt;li&gt;最近一直在用电脑A，干了好多事情安装了好多软件，也配置了不少开发环境跟各种服务，然而处于某种原因，我又要开始使用好久没用过的电脑B了，难道我要把在A上的做的各种配置在B上再重新做一遍？&lt;/li&gt;
-&lt;li&gt;在Windows下做着PPT呢，发现需要调出自己之前的程序，然后根据若干组输入跑几个结果画张图好插到PPT里，然而这个程序是在Linux下写的，编译等的过程也严重依赖自己用的Linux环境，重启进Linux拿到结果再回Windows太不方便，想在Windows下配置好环境把自己的程序跑通更不容易。&lt;/li&gt;
-&lt;li&gt;要对系统安装某个软件，或者进行一些比较危险的更新操作（要知道Archlinux滚动更新滚挂了太正常了），担心把系统搞挂了，系统备份又实在太麻烦，要真挂了，系统恢复起来更麻烦。&lt;/li&gt;
-&lt;li&gt;我一直用Archlinux做主力，然而最近做的某件事情要用某个软件，这个软件官方只给了Ubuntu上的安装方式，Archlinux里面没有相应的包，在Archlinux上手动安装也太不方便。装个Ubuntu，然后暂时用几天Ubuntu吧，也是够折腾的。更何况有时候只是想用一小下而已，怎样才能最小化自己在折腾上浪费的时间呢？&lt;/li&gt;
-&lt;li&gt;有的软件官方软件仓库里面没有，而&lt;code&gt;make install&lt;/code&gt;的话则会在系统中安装上不被包管理器所管理的文件，将来卸载也不方便，我还是更希望所有的文件都在一个包管理器中管理的。&lt;/li&gt;
-&lt;li&gt;听说新版本内核引入了某个牛逼的东西？我就想快速测试一下玩玩，我电脑还有计算在跑着呢，我可不想重启，那就只能用虚拟机尝试了。而且，一定要快速，我可不想为此特地装一个虚拟机。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;上述的这些不方便之处是可以通过自己管理系统时的一些技巧来克服的，本文目的就是来介绍一下这些技巧。通过这些技巧，我们实现的功能是：一台机器上，可以同时安装Windows跟若干Linux系统，Windows下可以通过虚拟机来运行位于本地磁盘的这些Linux系统，而这些Linux系统下也可以通过容器或者虚拟机的方式互相运行。并且这些系统可以非常方便地备份跟删除，也可以随时创建以及运行快照。并且这些Linux系统可以随时打包带走，只需要经过很少的修改，就能直接在U盘或者其他机器上运行。如果要换电脑，或者新装一台电脑，也不需要重新安装系统，只需要把已有的系统同步到新电脑就行。这也正是这篇文章标题的意思。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="Linux" scheme="https://zasdfgbnm.github.io/categories/Linux/"/>
-    
-    
-      <category term="Linux" scheme="https://zasdfgbnm.github.io/tags/Linux/"/>
-    
-      <category term="系统管理" scheme="https://zasdfgbnm.github.io/tags/%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86/"/>
-    
-      <category term="btrfs" scheme="https://zasdfgbnm.github.io/tags/btrfs/"/>
-    
-      <category term="refind" scheme="https://zasdfgbnm.github.io/tags/refind/"/>
-    
-      <category term="fstab" scheme="https://zasdfgbnm.github.io/tags/fstab/"/>
-    
-      <category term="root" scheme="https://zasdfgbnm.github.io/tags/root/"/>
-    
-      <category term="rootfs" scheme="https://zasdfgbnm.github.io/tags/rootfs/"/>
-    
-      <category term="ramfs" scheme="https://zasdfgbnm.github.io/tags/ramfs/"/>
-    
-      <category term="虚拟机" scheme="https://zasdfgbnm.github.io/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/"/>
-    
-      <category term="容器" scheme="https://zasdfgbnm.github.io/tags/%E5%AE%B9%E5%99%A8/"/>
-    
-      <category term="virtfs" scheme="https://zasdfgbnm.github.io/tags/virtfs/"/>
-    
-      <category term="KVM" scheme="https://zasdfgbnm.github.io/tags/KVM/"/>
-    
-      <category term="qemu" scheme="https://zasdfgbnm.github.io/tags/qemu/"/>
-    
-      <category term="VitualBox" scheme="https://zasdfgbnm.github.io/tags/VitualBox/"/>
-    
-      <category term="Plan 9" scheme="https://zasdfgbnm.github.io/tags/Plan-9/"/>
-    
-  </entry>
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
   
-</feed>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://zasdfgbnm-github-io.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://zasdfgbnm.github.io/2017/09/07/Extending-nftables/';
+          this.page.identifier = '2017/09/07/Extending-nftables/';
+          this.page.title = 'Adding new expressions to nftables';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://zasdfgbnm-github-io.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>
