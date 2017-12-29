@@ -101,6 +101,7 @@
 <meta property="og:title" content="zasdfgbnm">
 <meta property="og:url" content="https://zasdfgbnm.github.io/index.html">
 <meta property="og:site_name" content="zasdfgbnm">
+<meta property="og:locale" content="zh-Hans">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="zasdfgbnm">
 
@@ -306,6 +307,157 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://zasdfgbnm.github.io/2017/12/28/把docker镜像当作桌面系统来用/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zasdfgbnm">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zasdfgbnm">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/12/28/把docker镜像当作桌面系统来用/" itemprop="url">把docker镜像当作桌面系统来用</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-28T10:41:58-05:00">
+                2017-12-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/12/28/把docker镜像当作桌面系统来用/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2017/12/28/把docker镜像当作桌面系统来用/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>博主一直都很喜欢思考怎样管理装在自己电脑上的桌面系统，这篇算是前作<a href="2017/06/29/能当主力，能入虚拟机，还能随时打包带走，Linux就是这么强大/">能当主力，能入虚拟机，还能随时打包带走，Linux就是这么强大</a>的后续探索吧。</p>
+<p>近些年来，Docker由于提供了一套非常方便地创建并运行应用容器的方法，而在全球掀起了一股容器化的热潮。容器通过将软件及其所需要的运行环境一同打包带走，从而将人们从依赖的苦海中拯救出来。虽然Docker设计的初衷并不是操作系统容器，更不是一个直接运行在裸机上的操作系统，但是docker这套强大的工具也会给我们管理操作系统带来巨大的便利。</p>
+<p>为什么要用Docker镜像当作桌面系统？这就要从普通桌面系统的不方便之处说起。通常我们都拥有不止一台电脑，我们希望这些电脑能够保持一致。这里所说的“一致”，用一个例子来讲，就是我在一台电脑上编辑了一半的文件，不需要认为拷贝到另一台电脑上，而是直接打开电脑就能编辑。如果这个文件只是一个纯文本文件，或者一个Microsoft Word文档，那么实现这个一致性非常简单：把文件扔到Dropbox之类的云同步盘就好。然而对于专业用户来讲，这种一致性的保持并非单纯的扔到Dropbox里面那么简单：比如说你最近忙于一个项目，这个项目要用到若干编程语言，然后在电脑里装了一堆库，一堆工具软件，有图形界面的，也有命令行的。在工作的过程中，你有可能不断安装新的工具，或者决定弃用某个之前计划使用的库或者工具。要让你的工作在你的若干台电脑上都能工作，就要一直维护不同机器的环境的一致性：在一台机器上安装的工具，要在所有机器上重新安装一遍。在一台机器上升级了的库，要在所有机器上都升级，稍微有所差池，就有可能出现某个脚本/程序在一台机器上跑的好好的，在另一台机器上却无法运行的问题。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2017/12/28/把docker镜像当作桌面系统来用/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="https://zasdfgbnm.github.io/2017/09/07/Extending-nftables/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -407,7 +559,7 @@
       
         
           <h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>I’m recently writing something that uses Linux’s firewall framework to do some non-standard operations packets. Extending the kernel is required for my task but unfortunately documentations about this topic I find online are quite dated. These old documents are mainly for kernel version 2.4 and earlier 2.6.x, in which new matches or targets are registered by calling <code>ipt_register_match</code> and <code>ipt_register_target</code>. The related subsystem of kernel has changed a lot since then, and iptables has been replaced by nftables. Although we can use <code>xt_register_match</code> and <code>xt_register_target</code> instead, I prefer to move to the new nftables framework. Due to the lack of documentation, I have to dig into the source code of Linux kernel to figure out how things works, and this post is the note for that. As Linus Torvalds says in 2008, “Linux is evolution, not intelligent design”, the design and API of nftables might be changing very fast. So I’m not only trying to make a brief review on the design or API of nftables. But also, this post will serve as a guide on how to find the correct way of doing things by reading the kernel source code. The eager reader can go directly to <a href="#summary">the summary section</a>. This post is based on kernel version 4.13, the most recent version when this post is started writing.</p>
-<p>Here in this post, we will solve a toy problem: monitor all outgoing TCP traffic from port 80, if it contains the string given by the user, log it. I don’t assume any knowledge in the design or kernel API of nftables, but I do assume the reader has read and understand well <a href="https://wiki.nftables.org" target="_blank" rel="external">the official documents on how to use nftables</a>.</p>
+<p>Here in this post, we will solve a toy problem: monitor all outgoing TCP traffic from port 80, if it contains the string given by the user, log it. I don’t assume any knowledge in the design or kernel API of nftables, but I do assume the reader has read and understand well <a href="https://wiki.nftables.org" target="_blank" rel="noopener">the official documents on how to use nftables</a>.</p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2017/09/07/Extending-nftables/#more" rel="contents">
@@ -705,7 +857,7 @@
 
       
         
-          <p><strong>版权信息：博主就是本文原创作者，但是本文最早发布于<a href="http://www.freebuf.com/news/topnews/125994.html" target="_blank" rel="external">FreeBuf</a>，并属FreeBuf原创奖励计划，如需转载请联系FreeBuf。</strong></p>
+          <p><strong>版权信息：博主就是本文原创作者，但是本文最早发布于<a href="http://www.freebuf.com/news/topnews/125994.html" target="_blank" rel="noopener">FreeBuf</a>，并属FreeBuf原创奖励计划，如需转载请联系FreeBuf。</strong></p>
 <p>故事是这样的，本文作者读书的学校，IT部门要求我们如果使用Windows或者Mac OS要连接学校网络的话，必须安装SafeConnect客户端。这个客户端干的事情就是监视你的系统，确保你安装、启用并及时更新杀毒软件，确保你及时更新电脑上的Flash跟Java，确保你不使用P2P软件。然而我一直很不喜欢这种被监视的感觉，感觉这是侵犯了我的人权，况且我很少用P2P来下载盗版内容，偶尔用P2P一直都是用来下载Linux的安装镜像的，这种宁可错杀一千也不放过一个的做法实在是让人难以忍受。再加上学校的IT部门的人非常官僚，自己还没啥技术，曾经有同学找他们备份数据结果数据没备份成他们反而把分区表给搞坏了，这就让我坚定了跟他们斗争到底的想法，刚好也可以打发业余时光。由于SafeConnect客户端不支持Linux系统，同时学校中Linux用户的数量相当多，所以Linux系统不需要安装任何客户端，直接就能访问网络，这是一个关键性的切入点。</p>
           <!--noindex-->
           <div class="post-button text-center">
@@ -952,7 +1104,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-count">5</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -974,7 +1126,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">31</span>
+                <span class="site-state-item-count">34</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
