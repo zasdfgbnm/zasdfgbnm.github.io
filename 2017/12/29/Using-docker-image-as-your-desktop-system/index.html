@@ -1,0 +1,923 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="google-site-verification" content="d44tDfSSWxm1_XP1dAq65hkgyD6zw70Ua9JdCaJqWGg" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Linux,docker,initramfs," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="zasdfgbnm" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.1" />
+
+
+
+
+
+
+<meta name="description" content="In recent years, docker has created a containerization boom around the world by providing a way to easily create and run application containers. Containers save people from dependency hell by packagin">
+<meta name="keywords" content="Linux,docker,initramfs">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Using docker image as your desktop system">
+<meta property="og:url" content="https://zasdfgbnm.github.io/2017/12/29/Using-docker-image-as-your-desktop-system/index.html">
+<meta property="og:site_name" content="zasdfgbnm">
+<meta property="og:description" content="In recent years, docker has created a containerization boom around the world by providing a way to easily create and run application containers. Containers save people from dependency hell by packagin">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2017-12-30T05:22:02.933Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Using docker image as your desktop system">
+<meta name="twitter:description" content="In recent years, docker has created a containerization boom around the world by providing a way to easily create and run application containers. Containers save people from dependency hell by packagin">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://zasdfgbnm.github.io/2017/12/29/Using-docker-image-as-your-desktop-system/"/>
+
+
+
+
+
+  <title>Using docker image as your desktop system | zasdfgbnm</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-7583294-5', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?a56abdeb557a286a6b7a104348fdfbcd";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">zasdfgbnm</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br />
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+
+    <div>
+      
+      
+      <ul class="post-copyright">
+        <li class="post-copyright-author">
+            <strong>本文作者：</strong>zasdfgbnm
+        </li>
+        <li class="post-copyright-link">
+          <strong>本文链接：</strong>
+          <a href="/2017/12/29/Using-docker-image-as-your-desktop-system/" title="Using docker image as your desktop system">2017/12/29/Using-docker-image-as-your-desktop-system/</a>
+        </li>
+        <li class="post-copyright-license">
+          <strong>版权声明： </strong>
+          本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议。转载请注明出处！
+        </li>
+      </ul>
+      
+    </div>
+
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://zasdfgbnm.github.io/2017/12/29/Using-docker-image-as-your-desktop-system/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zasdfgbnm">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zasdfgbnm">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Using docker image as your desktop system</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-29T20:08:54-05:00">
+                2017-12-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/12/29/Using-docker-image-as-your-desktop-system/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2017/12/29/Using-docker-image-as-your-desktop-system/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>In recent years, docker has created a containerization boom around the world by providing a way to easily create and run application containers. Containers save people from dependency hell by packaging the software with the operating environment it needs. Although docker was designed to be neither an operating system container nor an operating system running directly on the bare metal, docker’s powerful suite of tools will also give us tremendous convenience in managing our desktop system running on bare metal.</p>
+<p>Why using docker image as a desktop system is a good idea? Let’s begin with talking about the inconvenience of the normal way how people are managing their desktop systems. Nowadays, most of us has more than one computer, and we want these computers to be “consistent”. Here when I say “consistent”, I mean, for example, I begin writing a document on one computer (say, at home) and am unable to finish it before having to switch to another computer (say, at work). I don’t want to worry about copying it manually to another computer, instead, I want it to be able to magically appear there so I can access it at any time. This is exactly what cloud sync disks like Dropbox do for us.  However, for geeks, what cloud sync disks do is far from enough. For example, you are busy with a project,  which uses a number of programming languages, libraries, and a bunch of  GUI and non-GUI tools. As you keep trying new things, you install new tools and change configurations continually on your system. It would be nice if these changes can be synced across different devices automatically so that when you install something you won’t need to install it one by one on each of your computers.</p>
+<a id="more"></a>
+<h1 id="The-philosophy-of-docker"><a href="#The-philosophy-of-docker" class="headerlink" title="The philosophy of docker"></a>The philosophy of docker</h1><p>Readers unfamiliar with docker can check out <a href="https://docs.docker.com/get-started/" target="_blank" rel="noopener">the official tutorial at here</a>. Docker is easy to use: we start by writing a Dockerfile containing commands that install and configure the libraries and tools we want. Readers unfamiliar with docker can take a look at the Dockerfile example below <a href="https://github.com/kstaken/dockerfile-examples/blob/master/nodejs/Dockerfile" target="_blank" rel="noopener">that I borrow</a> to get a quick idea on how a Dockerfile looks like:<br><figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">FROM</span> ubuntu</div><div class="line"><span class="keyword">MAINTAINER</span> Kimbro Staken</div><div class="line"></div><div class="line"><span class="keyword">RUN</span> apt-get install -y software-properties-common python</div><div class="line"><span class="keyword">RUN</span> add-apt-repository ppa:chris-lea/node.js</div><div class="line"><span class="keyword">RUN</span> echo "deb http://us.archive.ubuntu.com/ubuntu/ precise universe" &gt;&gt; /etc/apt/sources.list</div><div class="line"><span class="keyword">RUN</span> apt-get update</div><div class="line"><span class="keyword">RUN</span> apt-get install -y nodejs</div><div class="line"><span class="comment">#RUN apt-get install -y nodejs=0.6.12~dfsg1-1ubuntu1</span></div><div class="line"><span class="keyword">RUN</span> mkdir /var/www</div><div class="line"></div><div class="line"><span class="keyword">ADD</span> app.js /var/www/app.js</div><div class="line"></div><div class="line"><span class="keyword">CMD</span> ["/usr/bin/node", "/var/www/app.js"]</div></pre></td></tr></table></figure></p>
+<p>With a Dockerfile, a docker image can be created with just a single <code>docker build</code> command. The Docker company offers a service called DockerHub that can host public images for free. Use <code>docker push</code> to upload the image to DockerHub. To get the latest version of your image from DockerHub from a different computer, you only need a <code>docker pull</code>. DockerHub also supports auto-build. By connecting your DockerHub account with your GitHub account, you can make DockerHub automatically regenerates the image whenever the Dockerfile on GitHub changes.</p>
+<p>Docker is actually giving us the solution to the maintenance of consistency mentioned at the beginning of the article: we create a docker image that has everything we needed for our project. In that case, everything related to this project, such as development, testing, deployment, etc., can be done by first opening a container with <code>docker run</code> and then doing all the work inside. When we want to install something new or change some settings, we simply make the appropriate changes in the Dockerfile, rebuild the image, and then update it with <code>docker pull</code> on all the machines using it. This philosophy of use provides a very elegant solution to the problem of consistency through a centralized repository. The only drawback is that not all programs can run in the container, and not all of the programs are easy to run in the container. If you are using a GUI program, or some system-level program, then using the programs inside a container can be a lot of hassle.  So, to overcome this drawback, it is natural to ask: can we mount a docker image directly as the root directory when we boot, so that we can run the image on the bare machine and use it as our daily desktop system?</p>
+<p>There are other benefits to this approach other than the convenience of maintaining consistency:</p>
+<ul>
+<li>The entire system is stored in the cloud, the local content is only a cache of the cloud, so there is no need for regular backup of the system.</li>
+<li>How your system is configured from scratch to the way you want is clearly written in the Dockerfile. Dockerfile then becomes your best note.</li>
+<li>No need to worry about junk files or data corruption of some programs after using your system for a long time. Because every time you turn your computer on, you are using a brand new system.</li>
+<li>When you get a new machine, you don’t have to install the operating system from scratch: just pull the image from DockerHub.</li>
+<li>The process of a system update is nothing but rebuilding a Dockerfile from the latest software repository. Less human intervention will be needed compared to the normal system upgrade, which sometimes encounters file conflicts or dependency problems.</li>
+</ul>
+<h1 id="Docker-storage-driver"><a href="#Docker-storage-driver" class="headerlink" title="Docker storage driver"></a>Docker storage driver</h1><p>There is <a href="https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/" target="_blank" rel="noopener">an introduction to docker’s storage driver on the official site</a>, so we only discuss it briefly here. Docker uses the concept of layers. When building the image, docker executes the Dockerfile line by line and a new layer is created when executing each line. Only the diff is stored for each layer. When we do a <code>docker pull</code> or <code>docker push</code>, what docker actually does is download or upload the delta between layers instead of the whole layer. Whenever we do a <code>docker run</code>, docker will stack these downloaded deltas together to get a complete image. A new read-write layer (we will call it rwlayer in later contexts) on the top would also be created so that all writes to the container go to the rwlayer and the image itself is kept read-only. The concept of “layer” is actually implemented differently for different file systems where the docker directory (usually the directory <code>/var/lib/docker</code> on your computer) resides. These implementations are called graph drivers. Build-in graph drivers include aufs, overlay, btrfs, zfs, devicemapper and so on. Most graph drivers use copy-on-write techniques so that the process of creating a new layer does not require making a new copy of the data. The actual copy takes place when a write happens.</p>
+<p>As the author only uses btrfs, this article will focus on btrfs. Btrfs is a copy-on-write system. To make use of the copy-on-write feature of btrfs, whenever stacking a new layer, docker creates a snapshot of the original layer’s subvolume and write the diff into the new snapshot. When creating a container from an image, docker would create a snapshot of the top layer’s subvolume and use it as the rwlayer.</p>
+<h1 id="Boot-to-a-docker-image"><a href="#Boot-to-a-docker-image" class="headerlink" title="Boot to a docker image"></a>Boot to a docker image</h1><p>Besides the knowledge on how docker storage drivers work just discussed, we still need to know the Linux startup process to achieve our goal. During boot, the boot manager would load the kernel and a ramdisk called initramfs into memory. After some very basic initializations, the kernel will extract the initramfs to the root directory <code>/</code> and then start the init program in the memory disk (usually <code>/ init</code>). This init program will do some further initialization (for example, loading the file system drivers, do fsck, etc.). Then, this init program will mount the real root directory based on the kernel options <code>root</code>, <code>rootflags</code>, etc. and uses the <code>switch_root</code> program to switch the <code>/</code> from the initramfs to the mounted new root. The init program will be started by <code>switch_root</code> to make final initializations, such as mounting entries in fstab, loading graphics interface and so on. Many distributions provide tools to generate initramfs.  These tools are often modular and allow users to add their own hooks. The Arch Linux’s such tool is called “mkinitcpio”.</p>
+<p>Now we have all the knowledge needed to boot into a docker image, and here is the idea: we can add a hook to initramfs, which creates a snapshot from the desired image’s subvolume in docker’s local cache as a rwlayer before the new root is mounted. The real root is set to be the rwlayer, which will then be mounted and <code>switch_root</code>ed by the init in initramfs. In detail, when writing the kernel option in boot manager’s config file, <code>root</code> should be the partition where your <code>/var/ lib/docker</code> is located, and <code>rootflags</code> must have a <code>subvol=XXXXX</code>, where XXXXX is the relative location of the rwlayer that we plan to create with respect to <code>root</code>. The most important thing to do is to write a hook that: find the btrfs subvolume for the desired docker image, and then create a snapshot of that subvolume named XXXXX (the same name as in the kernel option). If you are using Arch Linux like the author, then all of the works have been done and the reader can use the author’s hook at GitHub directly.</p>
+<p>The code is located at: <a href="https://github.com/zasdfgbnm/mkinitcpio-docker-hooks" target="_blank" rel="noopener">https://github.com/zasdfgbnm/mkinitcpio-docker-hooks</a> .  Besides, the readers can also install <code>mkinitcpio-docker-hooks</code> directly from AUR.  A step-by-step tutorial to use this hook is given in the following section.</p>
+<h1 id="Make-a-docker-image-your-desktop-system-using-mkinitcpio-docker-hooks"><a href="#Make-a-docker-image-your-desktop-system-using-mkinitcpio-docker-hooks" class="headerlink" title="Make a docker image your desktop system using mkinitcpio-docker-hooks"></a>Make a docker image your desktop system using mkinitcpio-docker-hooks</h1><p>The usage of mkinitcpio-docker-hooks is roughly divided into the following steps:</p>
+<ol>
+<li>Make sure your <code>/var/lib/docker</code> is in a btrfs partition</li>
+<li>Prepare a docker image suitable for booting on bare metal</li>
+<li>Install and configure mkinitcpio-docker-hooks in this docker image</li>
+<li>Prepare the kernel and initramfs</li>
+<li>Prepare the top layer content</li>
+<li>Setup boot manager</li>
+</ol>
+<h2 id="Prepare-a-docker-image"><a href="#Prepare-a-docker-image" class="headerlink" title="Prepare a docker image"></a>Prepare a docker image</h2><p>To run a docker image on bare metal, you first need to have a docker image that is suitable for doing so. Many docker images, in order to reduce the size of the image, do not come with software packages that are only useful to bare metal running (such as dhcpcd).  So we need to manually install these packages in Dockerfile. For Arch Linux, this can be done simply by installing the group named <code>base</code>. </p>
+<p>Since the next step is to install mkinitcpio-docker-hooks, it is recommended to base your docker image from an image that comes with yaourt. Personally, I use <a href="https://cloud.docker.com/swarm/zasdfgbnm/repository/docker/zasdfgbnm/archlinux-yaourt/general" target="_blank" rel="noopener">my own archlinux-yaourt image named <code>zasdfgbnm/archlinux-yaourt</code></a>. Therefore, the first few lines of Dockerfile looks like this:<br><figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">FROM</span> zasdfgbnm/archlinux-yaourt</div><div class="line"><span class="keyword">USER</span> root</div><div class="line"><span class="keyword">RUN</span> pacman -Syu --noconfirm base</div></pre></td></tr></table></figure></p>
+<p>Since this is just a demo, I will not install any other package here. The readers may want to install other packages according to their needs.</p>
+<h2 id="Installation-and-configuration-of-mkinitcpio-docker-hooks"><a href="#Installation-and-configuration-of-mkinitcpio-docker-hooks" class="headerlink" title="Installation and configuration of mkinitcpio-docker-hooks"></a>Installation and configuration of mkinitcpio-docker-hooks</h2><p>The mkinitcpio-docker-hooks package should be installed inside the docker image that we plan to use as our desktop. The reason is mainly that the Linux kernel does not provide ABI stability. Therefore, the kernel modules must be strictly consistent the kernel version, otherwise, the modules cannot be loaded. In order to maintain this consistency, what we do is to install mkinitcpio-docker-hooks and generate initramfs in docker, and use the kernel from the docker image to boot. Doing so will ensure that the kernel, modules copied to initramfs, and the <code>/lib/modules</code> inside the docker image are for the same kernel. To install mkinitcpio-docker-hooks, add the following to Dockerfile:<br><figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">RUN</span> sudo -u user yaourt -S --noconfirm mkinitcpio-docker-hooks</div></pre></td></tr></table></figure></p>
+<p>The configuration file for mkinitcpio-docker-hooks is <code>/etc/docker-btrfs.json</code>, whose default value reads:<br><figure class="highlight json"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    <span class="attr">"docker_image"</span>: <span class="string">"archlinux/base"</span>,</div><div class="line">    <span class="attr">"docker_tag"</span>: <span class="string">"latest"</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>All we need to do is replace the values of these two variables with the values we want, for example, I’m going to name my demo docker image “sample_image”. At the same time, we also need to add the <code>docker-btrfs</code> hook to<code>/etc/mkinitcpio.conf</code>. The following two lines in Dockerfile does the above configuration:<br><figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">RUN</span> sed -i 's/archlinux\/base/sample_image/g' /etc/docker-btrfs.json</div><div class="line"><span class="keyword">RUN</span> perl -i -p -e 's/(?&lt;=^HOOKS=\()(.*)(?=\))/$1 docker-btrfs/g' /etc/mkinitcpio.conf</div></pre></td></tr></table></figure></p>
+<p>Now we have a ready-to-use demo Dockerfile:<br><figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">FROM</span> zasdfgbnm/archlinux-yaourt</div><div class="line"><span class="keyword">USER</span> root</div><div class="line"><span class="keyword">RUN</span> pacman -Syu --noconfirm base</div><div class="line"><span class="keyword">RUN</span> sudo -u user yaourt -S --noconfirm mkinitcpio-docker-hooks</div><div class="line"><span class="keyword">RUN</span> sed -i 's/archlinux\/base/sample_image/g' /etc/docker-btrfs.json</div><div class="line"><span class="keyword">RUN</span> perl -i -p -e 's/(?&lt;=^HOOKS=\()(.*)(?=\))/$1 docker-btrfs/g' /etc/mkinitcpio.conf</div></pre></td></tr></table></figure></p>
+<p>We can the use the command <code>docker build . -t sample_image</code> to create our docker image from this Dockerfile.</p>
+<h2 id="Prepare-kernel-and-initramfs"><a href="#Prepare-kernel-and-initramfs" class="headerlink" title="Prepare kernel and initramfs"></a>Prepare kernel and initramfs</h2><p>After the image is generated, the next step is to prepare the kernel and initramfs. Note that this step is best done on the machine that you intend to use to start the docker image because mkinitcpio automatically places the appropriate kernel modules into initramfs based on the machine, and if run on other machines, there may be wrong drivers will be packed into initramfs. As mentioned earlier, this step is done inside the docker container.</p>
+<p>First, run the container and open an interactive shell:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run -v $(<span class="built_in">pwd</span>):/workspace -w /workspace -it sample_image bash</div></pre></td></tr></table></figure></p>
+<p>Then, run the following commands inside the shell:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">mkinitcpio -p linux</div><div class="line">cp /boot/* .</div><div class="line"><span class="built_in">exit</span></div></pre></td></tr></table></figure></p>
+<p>Now you can see the <code>vmlinuz-linux</code> and generated <code>initramfs-linux-fallback.img</code> and <code>initramfs-linux.img</code> in the current directory.</p>
+<h2 id="Prepare-the-top-layer-content"><a href="#Prepare-the-top-layer-content" class="headerlink" title="Prepare the top layer content"></a>Prepare the top layer content</h2><p>The top layer is a new concept introduced by mkinitcpio-docker-hooks. It refers to a directory in a drive that will be copied to the rwlayer via busybox’s <code>cp -a</code> at startup, before mounting the real root and after the creation of rwlayer. Why do you need top layer? Because we need to start the same image on multiple machines, different machines often need to have different configuration files, such as <code>/etc/fstab</code> and <code>/etc/X11/xorg.conf</code>. In addition, DockerHub free account can only host very few private images, but <code>/etc/passwd</code>, <code>/etc/shadow</code> and other private files are not suitable to be in a public image.</p>
+<p>Preparation of the top layer is to find a folder to store separate configuration files, in a structure the same way as in image’s file system. For example, if you want a separate <code>/etc/fstab</code>, you should add the file<code>etc/fstab</code> in the top layer’s directory. Here’s the suggested operation flow: first, enter the shell in the container through <code>docker run -v $(pwd): /workspace -w /workspace -it sample_image bash</code>; then, config the system in the shell, such as <code>useradd ...</code>; finally, copy new configuration file to the top layer folder.</p>
+<h2 id="Setup-boot-manager"><a href="#Setup-boot-manager" class="headerlink" title="Setup boot manager"></a>Setup boot manager</h2><p>Now the only thing we need is to set the boot manager. Here we take refind as an example. Everything (docker directory, the top layer, kernel, initramfs) is assumed to be in a btrfs partition labeled “linux”. The docker directory (i.e. the <code>/var/lib/docker</code>) is in a subvolume called “docker” at the root of this partition. The kernel, initramfs, and top layer are all located in the “boot_docker” folder at the root of the partition. We want to name the rwlayer “docker_rwlayer”. Then the menuentry in <code>refind.conf</code> should read:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">menuentry archlinux-docker &#123;</div><div class="line">        icon EFI/refind/icons/os_arch.png</div><div class="line">        volume linux</div><div class="line">        loader boot_docker/vmlinuz-linux</div><div class="line">        initrd boot_docker/initramfs-linux.img</div><div class="line">        options &quot;root=LABEL=linux rootflags=subvol=docker_rwlayer rw docker_path=docker toplayer=LABEL=linux toplayer_path=boot_docker&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>Among the kernel options, we specify the partition where the docker directory is located by <code>root</code>. The <code>subvol</code> inside <code>rootflags</code> is used to specify the location of the rwlayer. The <code>docker_path</code> is used to specify the relative position of the docker directory in <code>root</code>. The partition where the top layer is located is specified by <code>toplayer</code>, and <code>toplayerflags</code> is used to specify the mount option for that partition. The <code>toplayer_path</code> is used to specify the relative position of the top layer directory in the<code>toplayer</code> partition.</p>
+<p>Everything is done. Reboot and enjoy!</p>
+<p>In addition, interested readers can take a look at the docker image that the author is using:<br><a href="https://cloud.docker.com/swarm/zasdfgbnmsystem/repository/docker/zasdfgbnmsystem/archlinux-kde/general" target="_blank" rel="noopener">https://cloud.docker.com/swarm/zasdfgbnmsystem/repository/docker/zasdfgbnmsystem/archlinux-kde/general</a><br><a href="https://github.com/zasdfgbnm-dockers/archlinux-kde" target="_blank" rel="noopener">https://github.com/zasdfgbnm-dockers/archlinux-kde</a></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/docker/" rel="tag"># docker</a>
+          
+            <a href="/tags/initramfs/" rel="tag"># initramfs</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/28/把docker镜像当作桌面系统来用/" rel="next" title="把docker镜像当作桌面系统来用">
+                <i class="fa fa-chevron-left"></i> 把docker镜像当作桌面系统来用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+
+
+    <div class="post-spread">
+      
+    </div>
+
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="zasdfgbnm" />
+          <p class="site-author-name" itemprop="name">zasdfgbnm</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">33</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/zasdfgbnm" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#The-philosophy-of-docker"><span class="nav-number">1.</span> <span class="nav-text">The philosophy of docker</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Docker-storage-driver"><span class="nav-number">2.</span> <span class="nav-text">Docker storage driver</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Boot-to-a-docker-image"><span class="nav-number">3.</span> <span class="nav-text">Boot to a docker image</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Make-a-docker-image-your-desktop-system-using-mkinitcpio-docker-hooks"><span class="nav-number">4.</span> <span class="nav-text">Make a docker image your desktop system using mkinitcpio-docker-hooks</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Prepare-a-docker-image"><span class="nav-number">4.1.</span> <span class="nav-text">Prepare a docker image</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Installation-and-configuration-of-mkinitcpio-docker-hooks"><span class="nav-number">4.2.</span> <span class="nav-text">Installation and configuration of mkinitcpio-docker-hooks</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Prepare-kernel-and-initramfs"><span class="nav-number">4.3.</span> <span class="nav-text">Prepare kernel and initramfs</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Prepare-the-top-layer-content"><span class="nav-number">4.4.</span> <span class="nav-text">Prepare the top layer content</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Setup-boot-manager"><span class="nav-number">4.5.</span> <span class="nav-text">Setup boot manager</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zasdfgbnm</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://zasdfgbnm-github-io.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://zasdfgbnm.github.io/2017/12/29/Using-docker-image-as-your-desktop-system/';
+          this.page.identifier = '2017/12/29/Using-docker-image-as-your-desktop-system/';
+          this.page.title = 'Using docker image as your desktop system';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://zasdfgbnm-github-io.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>
