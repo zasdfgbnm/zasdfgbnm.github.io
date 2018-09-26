@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://zasdfgbnm.github.io/"/>
-  <updated>2018-09-26T15:42:34.190Z</updated>
+  <updated>2018-09-26T22:04:32.016Z</updated>
   <id>https://zasdfgbnm.github.io/</id>
   
   <author>
@@ -20,15 +20,15 @@
     <link href="https://zasdfgbnm.github.io/2018/09/20/PyTorch-JIT-Source-Code-Read-Note/"/>
     <id>https://zasdfgbnm.github.io/2018/09/20/PyTorch-JIT-Source-Code-Read-Note/</id>
     <published>2018-09-21T00:12:21.000Z</published>
-    <updated>2018-09-26T15:42:34.190Z</updated>
+    <updated>2018-09-26T22:04:32.016Z</updated>
     
     <content type="html"><![CDATA[<p>This is my note for reading PyTorch’s JIT source. We begin by looking at <code>torch.jit.script</code> and <code>torch.jit.script_method</code> to find the frontend that compiles the Python code into PyTorch’s tree views, and the backend that compiles tree views to graph. We also read the structure of the internal representation of PyTorch’s graph. Finally we go to graph executor to look at how the computation graph is further compiled into instructions and how the action of these instructions are defined and executed.</p>
 <a id="more"></a>
 <p>PyTorch is under very active development. So the PyTorch’s source code at the time the reader reading this article won’t be the same as when I wrote this article. To get the same source code as in this article, the readers could run the following command:</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git checkout 76ab26cc3eff1d7ba822d8db93723f5c9598eead</div></pre></td></tr></table></figure>
-<h1 id="Starting-point-scrip-and-script-method"><a href="#Starting-point-scrip-and-script-method" class="headerlink" title="Starting point: scrip and script_method"></a>Starting point: scrip and script_method</h1><p>In PyTorch, a Python function can be just-in-time compiled by doing something like:</p>
+<h1 id="Starting-point-script-and-script-method"><a href="#Starting-point-script-and-script-method" class="headerlink" title="Starting point: script and script_method"></a>Starting point: script and script_method</h1><p>In PyTorch, a Python function can be just-in-time compiled by doing something like:</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@torch.jit.script</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">f</span><span class="params">(x)</span>:</span></div><div class="line">    <span class="keyword">return</span> x + x</div></pre></td></tr></table></figure>
-<p>the <code>torch.jit.script</code> is a decorator of your function <code>f</code>. If you are unfamiliar with Python’s decorator, please refer to <a href="https://realPython.com/primer-on-Python-decorators/" target="_blank" rel="noopener">this article</a>.</p>
+<p>the <code>torch.jit.script</code> is a decorator of your function <code>f</code>. If you are unfamiliar with Python’s decorator, please refer to <a href="https://realpython.com/primer-on-python-decorators/" target="_blank" rel="noopener">this article</a>.</p>
 <p>It is also possible to create a module with its method JIT compiled by doing something like:</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyModule</span><span class="params">(torch.jit.ScriptModule)</span>:</span></div><div class="line"></div><div class="line"><span class="meta">    @torch.jit.script_method</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">f</span><span class="params">(self.x)</span>:</span></div><div class="line">        <span class="keyword">return</span> x * x</div><div class="line"></div><div class="line"><span class="meta">    @torch.jit.script_method</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, x)</span>:</span></div><div class="line">        <span class="keyword">return</span> x + self.f(x)</div></pre></td></tr></table></figure>
 <h2 id="Scripting-a-function"><a href="#Scripting-a-function" class="headerlink" title="Scripting a function"></a>Scripting a function</h2><p>We will start by looking at <code>torch.jit.script</code>. To read <code>torch.jit.script</code>, we begin by looking at <code>torch/jit/__init__.py</code>. To quickly locate <code>script</code>, search <code>def script</code> in your editor, and you will immediately find it:</p>
@@ -159,11 +159,11 @@
       <category term="机器学习" scheme="https://zasdfgbnm.github.io/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
     
     
-      <category term="机器学习" scheme="https://zasdfgbnm.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
-    
       <category term="PyTorch" scheme="https://zasdfgbnm.github.io/tags/PyTorch/"/>
     
       <category term="深度学习" scheme="https://zasdfgbnm.github.io/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
+    
+      <category term="机器学习" scheme="https://zasdfgbnm.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
     
   </entry>
   
@@ -221,11 +221,11 @@
       <category term="机器学习" scheme="https://zasdfgbnm.github.io/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
     
     
-      <category term="机器学习" scheme="https://zasdfgbnm.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
-    
       <category term="PyTorch" scheme="https://zasdfgbnm.github.io/tags/PyTorch/"/>
     
       <category term="深度学习" scheme="https://zasdfgbnm.github.io/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
+    
+      <category term="机器学习" scheme="https://zasdfgbnm.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
     
   </entry>
   
@@ -493,11 +493,11 @@
       <category term="机器学习" scheme="https://zasdfgbnm.github.io/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
     
     
+      <category term="机器学习" scheme="https://zasdfgbnm.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
+    
       <category term="Rademacher复杂度" scheme="https://zasdfgbnm.github.io/tags/Rademacher%E5%A4%8D%E6%9D%82%E5%BA%A6/"/>
     
       <category term="计算学习理论" scheme="https://zasdfgbnm.github.io/tags/%E8%AE%A1%E7%AE%97%E5%AD%A6%E4%B9%A0%E7%90%86%E8%AE%BA/"/>
-    
-      <category term="机器学习" scheme="https://zasdfgbnm.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
     
   </entry>
   

@@ -79,7 +79,7 @@
 <link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="机器学习,PyTorch,深度学习," />
+  <meta name="keywords" content="PyTorch,深度学习,机器学习," />
 
 
 
@@ -98,14 +98,14 @@
 
 
 <meta name="description" content="This is my note for reading PyTorch’s JIT source. We begin by looking at torch.jit.script and torch.jit.script_method to find the frontend that compiles the Python code into PyTorch’s tree views, and">
-<meta name="keywords" content="机器学习,PyTorch,深度学习">
+<meta name="keywords" content="PyTorch,深度学习,机器学习">
 <meta property="og:type" content="article">
 <meta property="og:title" content="PyTorch JIT Source Code Read Note">
 <meta property="og:url" content="https://zasdfgbnm.github.io/2018/09/20/PyTorch-JIT-Source-Code-Read-Note/index.html">
 <meta property="og:site_name" content="zasdfgbnm">
 <meta property="og:description" content="This is my note for reading PyTorch’s JIT source. We begin by looking at torch.jit.script and torch.jit.script_method to find the frontend that compiles the Python code into PyTorch’s tree views, and">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-09-26T15:42:34.190Z">
+<meta property="og:updated_time" content="2018-09-26T22:04:32.016Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="PyTorch JIT Source Code Read Note">
 <meta name="twitter:description" content="This is my note for reading PyTorch’s JIT source. We begin by looking at torch.jit.script and torch.jit.script_method to find the frontend that compiles the Python code into PyTorch’s tree views, and">
@@ -431,9 +431,9 @@
 <a id="more"></a>
 <p>PyTorch is under very active development. So the PyTorch’s source code at the time the reader reading this article won’t be the same as when I wrote this article. To get the same source code as in this article, the readers could run the following command:</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git checkout 76ab26cc3eff1d7ba822d8db93723f5c9598eead</div></pre></td></tr></table></figure>
-<h1 id="Starting-point-scrip-and-script-method"><a href="#Starting-point-scrip-and-script-method" class="headerlink" title="Starting point: scrip and script_method"></a>Starting point: scrip and script_method</h1><p>In PyTorch, a Python function can be just-in-time compiled by doing something like:</p>
+<h1 id="Starting-point-script-and-script-method"><a href="#Starting-point-script-and-script-method" class="headerlink" title="Starting point: script and script_method"></a>Starting point: script and script_method</h1><p>In PyTorch, a Python function can be just-in-time compiled by doing something like:</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@torch.jit.script</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">f</span><span class="params">(x)</span>:</span></div><div class="line">    <span class="keyword">return</span> x + x</div></pre></td></tr></table></figure>
-<p>the <code>torch.jit.script</code> is a decorator of your function <code>f</code>. If you are unfamiliar with Python’s decorator, please refer to <a href="https://realPython.com/primer-on-Python-decorators/" target="_blank" rel="noopener">this article</a>.</p>
+<p>the <code>torch.jit.script</code> is a decorator of your function <code>f</code>. If you are unfamiliar with Python’s decorator, please refer to <a href="https://realpython.com/primer-on-python-decorators/" target="_blank" rel="noopener">this article</a>.</p>
 <p>It is also possible to create a module with its method JIT compiled by doing something like:</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyModule</span><span class="params">(torch.jit.ScriptModule)</span>:</span></div><div class="line"></div><div class="line"><span class="meta">    @torch.jit.script_method</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">f</span><span class="params">(self.x)</span>:</span></div><div class="line">        <span class="keyword">return</span> x * x</div><div class="line"></div><div class="line"><span class="meta">    @torch.jit.script_method</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, x)</span>:</span></div><div class="line">        <span class="keyword">return</span> x + self.f(x)</div></pre></td></tr></table></figure>
 <h2 id="Scripting-a-function"><a href="#Scripting-a-function" class="headerlink" title="Scripting a function"></a>Scripting a function</h2><p>We will start by looking at <code>torch.jit.script</code>. To read <code>torch.jit.script</code>, we begin by looking at <code>torch/jit/__init__.py</code>. To quickly locate <code>script</code>, search <code>def script</code> in your editor, and you will immediately find it:</p>
@@ -582,11 +582,11 @@
       
         <div class="post-tags">
           
-            <a href="/tags/机器学习/" rel="tag"># 机器学习</a>
-          
             <a href="/tags/PyTorch/" rel="tag"># PyTorch</a>
           
             <a href="/tags/深度学习/" rel="tag"># 深度学习</a>
+          
+            <a href="/tags/机器学习/" rel="tag"># 机器学习</a>
           
         </div>
       
@@ -764,7 +764,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Starting-point-scrip-and-script-method"><span class="nav-number">1.</span> <span class="nav-text">Starting point: scrip and script_method</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Scripting-a-function"><span class="nav-number">1.1.</span> <span class="nav-text">Scripting a function</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Scripting-a-module"><span class="nav-number">1.2.</span> <span class="nav-text">Scripting a module</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-frontend"><span class="nav-number">2.</span> <span class="nav-text">The frontend</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ScriptModule-and-ScriptMethod"><span class="nav-number">3.</span> <span class="nav-text">ScriptModule and ScriptMethod</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#From-Python-AST-to-PyTorch-IR-part-1"><span class="nav-number">4.</span> <span class="nav-text">From Python AST to PyTorch IR: part 1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-PyTorch-IR"><span class="nav-number">5.</span> <span class="nav-text">The PyTorch IR</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#From-Python-AST-to-PyTorch-IR-part-2"><span class="nav-number">6.</span> <span class="nav-text">From Python AST to PyTorch IR: part 2</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-Graph-Executor"><span class="nav-number">7.</span> <span class="nav-text">The Graph Executor</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Compiling-to-Interpreter-Instructions"><span class="nav-number">8.</span> <span class="nav-text">Compiling to Interpreter Instructions</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-Virtual-Machine"><span class="nav-number">9.</span> <span class="nav-text">The Virtual Machine</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Starting-point-script-and-script-method"><span class="nav-number">1.</span> <span class="nav-text">Starting point: script and script_method</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Scripting-a-function"><span class="nav-number">1.1.</span> <span class="nav-text">Scripting a function</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Scripting-a-module"><span class="nav-number">1.2.</span> <span class="nav-text">Scripting a module</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-frontend"><span class="nav-number">2.</span> <span class="nav-text">The frontend</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ScriptModule-and-ScriptMethod"><span class="nav-number">3.</span> <span class="nav-text">ScriptModule and ScriptMethod</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#From-Python-AST-to-PyTorch-IR-part-1"><span class="nav-number">4.</span> <span class="nav-text">From Python AST to PyTorch IR: part 1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-PyTorch-IR"><span class="nav-number">5.</span> <span class="nav-text">The PyTorch IR</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#From-Python-AST-to-PyTorch-IR-part-2"><span class="nav-number">6.</span> <span class="nav-text">From Python AST to PyTorch IR: part 2</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-Graph-Executor"><span class="nav-number">7.</span> <span class="nav-text">The Graph Executor</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Compiling-to-Interpreter-Instructions"><span class="nav-number">8.</span> <span class="nav-text">Compiling to Interpreter Instructions</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-Virtual-Machine"><span class="nav-number">9.</span> <span class="nav-text">The Virtual Machine</span></a></li></ol></div>
             
 
           </div>

@@ -5,17 +5,17 @@
     
   <url>
     <loc>https://zasdfgbnm.github.io/2018/09/20/PyTorch-JIT-Source-Code-Read-Note/</loc>
-    <lastmod>2018-09-26T15:42:34.190Z</lastmod>
+    <lastmod>2018-09-26T22:04:32.016Z</lastmod>
     <data>
         <display>
         <title>PyTorch JIT Source Code Read Note</title>
         <pubTime>2018-09-21T00:12:21.000Z</pubTime>
         
-        <tag>机器学习</tag>
-         
         <tag>PyTorch</tag>
          
         <tag>深度学习</tag>
+         
+        <tag>机器学习</tag>
          
          
            
@@ -35,11 +35,11 @@
         <title>从头开始阅读PyTorch代码 -- Operators篇</title>
         <pubTime>2018-06-11T12:50:00.000Z</pubTime>
         
-        <tag>机器学习</tag>
-         
         <tag>PyTorch</tag>
          
         <tag>深度学习</tag>
+         
+        <tag>机器学习</tag>
          
          
            
@@ -183,11 +183,11 @@
         <title>Rademacher复杂度学习笔记</title>
         <pubTime>2017-07-07T02:40:59.000Z</pubTime>
         
+        <tag>机器学习</tag>
+         
         <tag>Rademacher复杂度</tag>
          
         <tag>计算学习理论</tag>
-         
-        <tag>机器学习</tag>
          
          
            
