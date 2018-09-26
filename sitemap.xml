@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://zasdfgbnm.github.io/2018/09/20/PyTorch-JIT-Source-Code-Read-Note/</loc>
+    
+    <lastmod>2018-09-26T15:42:34.190Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://zasdfgbnm.github.io/2018/06/11/%E4%BB%8E%E5%A4%B4%E5%BC%80%E5%A7%8B%E9%98%85%E8%AF%BBPyTorch%E4%BB%A3%E7%A0%81%20--%20Operators%E7%AF%87/</loc>
     
     <lastmod>2018-07-10T03:46:10.784Z</lastmod>
