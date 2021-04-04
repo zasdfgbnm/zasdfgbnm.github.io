@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta name="google-site-verification" content="d44tDfSSWxm1_XP1dAq65hkgyD6zw70Ua9JdCaJqWGg">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"zasdfgbnm.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="讲一下我自己给自己搭建的网络环境吧，好友很久之前就劝我写了，但那时候工作生活乐趣无穷，没心思写博客，反倒最近烦心事多了，想找点东西换换脑子转移注意力，就跑来写博客了。其实我最早开始玩网络，是因为被学校无端指责我用P2P软件，我去跟他们理论无果，他们拒绝向我提供任何的报告，而我也拒绝向他们认错，于是他们把我家里网“封锁”了，而我在寻求一种穿透他们的方法。经过不断的尝试与探索，我自己的网络结构也演化了">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GRE、Wireguard、网桥与IPv6">
+<meta property="og:url" content="https://zasdfgbnm.github.io/2018/11/09/GRE%E3%80%81Wireguard%E3%80%81%E7%BD%91%E6%A1%A5%E4%B8%8EIPv6/index.html">
+<meta property="og:site_name" content="zasdfgbnm">
+<meta property="og:description" content="讲一下我自己给自己搭建的网络环境吧，好友很久之前就劝我写了，但那时候工作生活乐趣无穷，没心思写博客，反倒最近烦心事多了，想找点东西换换脑子转移注意力，就跑来写博客了。其实我最早开始玩网络，是因为被学校无端指责我用P2P软件，我去跟他们理论无果，他们拒绝向我提供任何的报告，而我也拒绝向他们认错，于是他们把我家里网“封锁”了，而我在寻求一种穿透他们的方法。经过不断的尝试与探索，我自己的网络结构也演化了">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://zasdfgbnm.github.io/2018/11/09/GRE%E3%80%81Wireguard%E3%80%81%E7%BD%91%E6%A1%A5%E4%B8%8EIPv6/design.svg">
+<meta property="article:published_time" content="2018-11-09T13:13:39.000Z">
+<meta property="article:modified_time" content="2021-04-04T05:17:59.763Z">
+<meta property="article:author" content="zasdfgbnm">
+<meta property="article:tag" content="GRE">
+<meta property="article:tag" content="GRETAP">
+<meta property="article:tag" content="Wireguard">
+<meta property="article:tag" content="GUE">
+<meta property="article:tag" content="UDP">
+<meta property="article:tag" content="iptables">
+<meta property="article:tag" content="IPv6">
+<meta property="article:tag" content="Router Advertisement">
+<meta property="article:tag" content="网桥">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zasdfgbnm.github.io/2018/11/09/GRE%E3%80%81Wireguard%E3%80%81%E7%BD%91%E6%A1%A5%E4%B8%8EIPv6/design.svg">
+
+<link rel="canonical" href="https://zasdfgbnm.github.io/2018/11/09/GRE%E3%80%81Wireguard%E3%80%81%E7%BD%91%E6%A1%A5%E4%B8%8EIPv6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>GRE、Wireguard、网桥与IPv6 | zasdfgbnm</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-7583294-5"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-7583294-5');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?a56abdeb557a286a6b7a104348fdfbcd";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="zasdfgbnm" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zasdfgbnm</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-sitemap">
+
+    <a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>Sitemap</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://zasdfgbnm.github.io/2018/11/09/GRE%E3%80%81Wireguard%E3%80%81%E7%BD%91%E6%A1%A5%E4%B8%8EIPv6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zasdfgbnm">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zasdfgbnm">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          GRE、Wireguard、网桥与IPv6
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-11-09 08:13:39" itemprop="dateCreated datePublished" datetime="2018-11-09T08:13:39-05:00">2018-11-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-04-04 01:17:59" itemprop="dateModified" datetime="2021-04-04T01:17:59-04:00">2021-04-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">网络</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus: </span>
+    
+    <a title="disqus" href="/2018/11/09/GRE%E3%80%81Wireguard%E3%80%81%E7%BD%91%E6%A1%A5%E4%B8%8EIPv6/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/11/09/GRE、Wireguard、网桥与IPv6/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>讲一下我自己给自己搭建的网络环境吧，好友很久之前就劝我写了，但那时候工作生活乐趣无穷，没心思写博客，反倒最近烦心事多了，想找点东西换换脑子转移注意力，就跑来写博客了。其实我最早开始玩网络，是因为被学校无端指责我用P2P软件，我去跟他们理论无果，他们拒绝向我提供任何的报告，而我也拒绝向他们认错，于是他们把我家里网“封锁”了，而我在寻求一种穿透他们的方法。经过不断的尝试与探索，我自己的网络结构也演化了好几代，反倒变得比被学校断网之前方便了好多，也引入了IPv6的支持，这样我就可以随时用手机访问自己家里任何设备的任何端口了。</p>
+<p>我之所以搭建自己的网络环境，主要是为了提供如下的功能：</p>
+<ul>
+<li>把我在世界各地的局域网连接到一起去，让他们互相之间能够访问到，并且为这些网络提供可路由的公网IPv6地址。</li>
+<li>突破一些封锁，比如学校的DHNet给我的断网，以及天朝的GFW。</li>
+<li>在外面的便携设备，可以随时连接进来，获得可路由的公网IPv6地址。</li>
+</ul>
+<span id="more"></span>
+
+<h1 id="网络结构的设计"><a href="#网络结构的设计" class="headerlink" title="网络结构的设计"></a>网络结构的设计</h1><p>网络采用中心化了的设计，示意图见下面。 一台位于Linode的主机充当了核心的管理节点。这个核心节点维护一个网桥，所有的子网或者设备想要加入，都是通过GRETAP桥接进这个网桥来实现的。如果是单个设备接入的话，那么这台设备直接通过GRETAP接入就好。如果是一个子网想要接入的话，除了建立GRETAP以外，还需要将其跟子网桥接起来。</p>
+<img src="/2018/11/09/GRE%E3%80%81Wireguard%E3%80%81%E7%BD%91%E6%A1%A5%E4%B8%8EIPv6/design.svg" class="" title="网络的结构">
+
+<p>GRE协议本身无法穿透NAT，而不幸的是，由于IPv4地址的枯竭，现在的运营商很少会给你公网的IPv4地址了。PPTP改版过的GRE协议，是可以透过NAT的，然而笔者费尽周折，都没找到如何在Linux上抛开PPTP单用其GRE。为了解决NAT的问题，有两种解决方案，一种是通过<a target="_blank" rel="noopener" href="https://datatracker.ietf.org/meeting/91/materials/slides-91-nvo3-1">Generic UDP Encapsulation(GUE)</a>来封装GRE包，另一种则是新建一个VPN链接，然后让GRE包直接通过VPN链接跟核心节点相连。</p>
+<p>对于新建VPN连接的方案，笔者强烈推荐<a target="_blank" rel="noopener" href="https://www.wireguard.com/">Wireguard</a>。之所以推荐Wireguard，首先是因为它配置相当简单，而且工具链符合Unix哲学：传统的VPN软件，在连接上VPN的时候，会自动改你的路由表、DNS设置等等，让你的一切连接都走VPN；而对于那些移动设备（办公室的电脑、随身携带的笔记本），我新建VPN只是希望能够提供一个虚拟通道，实现到核心节点的免NAT访问而已，我并不需要修改IPv4流量原来的走向。而且，Wireguard对移动设备非常友好，自带漫游功能，笔记本在一个地方连上Wireguard，然后带走去别的地方，连接上不同的网络，Wireguard也不会中断，而是自动漫游过去。</p>
+<p>GRETAP跟网桥都设置好了以后，所有的设备之间就可以在layer2互相访问了，真正要使用的话，再处理好IP地址就好。IPv4的地址跟IPv6的地址的处理方式非常不一样。IPv6的设置异常简单，由于地址空间充足，我直接跟Linode要了个<code>/64</code>的网段，这个网段是我可以自己随意使用的，发往这个前缀下的任何IP地址的包，Linode都会帮我路由到我的那个核心节点去，这样我的核心节点只需要帮忙转发即可。由于layer2已经能互相访问了，我只需要在核心节点设置好<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Radvd">radvd</a>向网桥发送Router Advertisement来广播自己的前缀就好，设备收听到了Router Advertisement，就会自动设置好自己的IPv6地址跟路由信息。</p>
+<p>IPv4的地址的配置则要复杂很多，由于IPv4地址空间太少，到处都是负责分配私有地址的DHCP服务器，数据包想要去Internet，也得NAT了才能上路。我这里采用半手动的管理的策略，我选择了<code>192.168.x.y</code>这个网段作为整个大网络的网段，对这个网段再进一步划分，想要连接进来的不同的子网，被人为设置了不同的<code>x</code>值，这些子网的路由器的DHCP服务器被设置了<code>/24</code>的前缀长度，也就是路由器只会分配不同的<code>y</code>值。核心节点我就给了它一个<code>192.168.0.1</code>这个地址，而各个子网，都人为选取不同的非零的<code>x</code>值。在每个子网的路由器上，把子网的大小设置为<code>/16</code>，但是DHCP服务器的前缀长度仍然保持<code>/24</code>，这样，子网内的设备想要访问其他子网的时候，包先会被路由到路由器中，然后路由器通过ARP映射表找到相应目标的Mac地址，然后通过layer2直接把包送到目标。如果想要翻墙，可以额外添加针对GeoIP的路由。如果想要整个子网都用核心节点当出口，那么只需要在路由器的路由表中，把核心节点的公网IP的路由人为标记为从WAN的interface出，然后把网关设置为<code>192.168.0.1</code>即可。</p>
+<h1 id="核心节点的配置"><a href="#核心节点的配置" class="headerlink" title="核心节点的配置"></a>核心节点的配置</h1><p>按照我们设计的网络结构，核心的配置主要需要做这样一些事情：</p>
+<ul>
+<li>给一些想要通过Wireguard连接进来的主机建立Wireguard连接</li>
+<li>给所有连接进来的设备或者子网设置GRETAP</li>
+<li>设置一个网桥，把所有这一大堆GRETAP给桥接到一起</li>
+</ul>
+<p>Talk is cheap，我们直接来看code。笔者的所有操作系统都是Archlinux。公网的出口是<code>eth0</code>。</p>
+<p>先来设置好变量：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SERVER_IP=1.2.3.4  <span class="comment"># 保护隐私，此处隐去真实地址</span></span><br><span class="line">SERVER_IP6=2001:db8::1  <span class="comment"># 保护隐私，此处隐去真实地址</span></span><br><span class="line">SERVER_LOCAL_IP=192.168.0.1</span><br><span class="line">INTERFACE=eth0</span><br></pre></td></tr></table></figure>
+
+<h2 id="网络基础设置的配置"><a href="#网络基础设置的配置" class="headerlink" title="网络基础设置的配置"></a>网络基础设置的配置</h2><p>然后就是启用IP Forward、Masquerade以及跟TCPMSS了，这些都是玩隧道跟软路由的常识了：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sysctl -w net.ipv4.conf.all.forwarding=1</span><br><span class="line">sysctl -w net.ipv6.conf.all.forwarding=1</span><br><span class="line">iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE</span><br><span class="line">iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu</span><br><span class="line">ip6tables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu</span><br></pre></td></tr></table></figure>
+
+<p>然后就是设置好bridge：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ip link add taps_bridge <span class="built_in">type</span> bridge</span><br><span class="line">ip link <span class="built_in">set</span> taps_bridge up</span><br><span class="line">ip address add <span class="variable">$SERVER_IP6</span>/64 dev taps_bridge</span><br><span class="line">ip address add <span class="variable">$SERVER_LOCAL_IP</span>/16 dev taps_bridge</span><br></pre></td></tr></table></figure>
+
+<p>接下来就是配置radvd，先来看配置文件<code>/etc/radvd.conf</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">interface taps_bridge</span><br><span class="line">&#123;</span><br><span class="line">	AdvSendAdvert on;</span><br><span class="line"></span><br><span class="line">	prefix 2001:db8::&#x2F;64</span><br><span class="line">	&#123;</span><br><span class="line">		AdvOnLink on;</span><br><span class="line">		AdvAutonomous on;</span><br><span class="line">		AdvRouterAddr on;</span><br><span class="line">	&#125;;</span><br><span class="line"></span><br><span class="line">	RDNSS 2001:4860:4860:0:0:0:0:8888</span><br><span class="line">	&#123;</span><br><span class="line">	&#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>上面的DNS服务器用的是<a target="_blank" rel="noopener" href="https://developers.google.com/speed/public-dns/docs/using">Google Public DNS</a>。写好配置文件以后，就可以开启radvd了：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl start radvd.service</span><br></pre></td></tr></table></figure>
+
+<h2 id="GRE-over-GUE的配置"><a href="#GRE-over-GUE的配置" class="headerlink" title="GRE over GUE的配置"></a>GRE over GUE的配置</h2><p>接下来设置GUE封装的GRE的连接，每个连接都要来上这么一段：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">FOU_PORT=5555</span><br><span class="line">REMOTE_PUBLIC_IP=2.3.4.5  <span class="comment"># 保护隐私，此处隐去真实地址</span></span><br><span class="line">REMOTE_PUBLIC_PORT=5555</span><br><span class="line"></span><br><span class="line">modprobe fou</span><br><span class="line">ip fou add port <span class="variable">$FOU_PORT</span> gue</span><br><span class="line"></span><br><span class="line">ip link add name gretap_over_gue <span class="built_in">type</span> gretap \</span><br><span class="line">    remote <span class="variable">$REMOTE_PUBLIC_IP</span> <span class="built_in">local</span> <span class="variable">$SERVER_IP</span> \</span><br><span class="line">    ttl 225 encap gue encap-sport <span class="variable">$FOU_PORT</span> encap-dport <span class="variable">$REMOTE_PUBLIC_PORT</span></span><br><span class="line">ip link <span class="built_in">set</span> gretap_over_gue up</span><br><span class="line">ip link <span class="built_in">set</span> gretap_over_gue master taps_bridge</span><br></pre></td></tr></table></figure>
+
+<p>上面的<code>FOU_PORT</code>是GUE接收端用的UDP端口号，关于这方面的更好的介绍，可以参见<a target="_blank" rel="noopener" href="https://lwn.net/Articles/614348/">lwn.net对Foo over UDP的介绍</a>。<code>REMOTE_PUBLIC_IP</code>跟<code>REMOTE_PUBLIC_PORT</code>分别是要连接到核心节点的客户端的公网IP跟NAT转换后的端口。</p>
+<h2 id="Wireguard的配置"><a href="#Wireguard的配置" class="headerlink" title="Wireguard的配置"></a>Wireguard的配置</h2><p>这里我们使用Wireguard作为我们的VPN解决方案。这里Wireguard的作用，仅仅是给GRETAP提供一个能够穿透NAT的皮而已，所有的上层流量都是封装进GRETAP里面去的，不直接走Wireguard。所以Wireguard的配置上，只需要设置好IP地址就好，不需要复杂的路由表设置。在Wireguard的interface的配置上，我们把核心节点设置成<code>172.16.0.1</code>，其他的设备分别赋予<code>172.16.0.2</code>、<code>172.16.0.3</code>、……。</p>
+<p>Wireguard的配置教程参见<a target="_blank" rel="noopener" href="https://www.wireguard.com/quickstart/">官网</a>. 这里我们的wireguard.conf文件如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">[Interface]</span><br><span class="line">PrivateKey &#x3D; aAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAa&#x3D;  # 此处为了隐私略去真实私钥</span><br><span class="line">#PublicKey &#x3D; JFcFDUEB0ZUVhUhfYPNT8Ma9FoeMVf2x03CYFyE5jTg&#x3D;</span><br><span class="line">ListenPort &#x3D; 23450</span><br><span class="line"></span><br><span class="line"># 每个要连接进来的节点都要有一个[Peer]条目</span><br><span class="line"></span><br><span class="line">[Peer]</span><br><span class="line"># office desktop</span><br><span class="line">PublicKey &#x3D; 8TYMD&#x2F;dmDLgbAp1VSvhemGEe6e8Yr&#x2F;7GGjRCAce6ZGA&#x3D;</span><br><span class="line">AllowedIPs &#x3D; 172.16.0.2&#x2F;32</span><br><span class="line"></span><br><span class="line">[Peer]</span><br><span class="line"># Macbook Pro</span><br><span class="line">PublicKey &#x3D; fgZdAIh6&#x2F;KIzpTYZtjtirOKPAujfmCqumPb+F7XGzmM&#x3D;</span><br><span class="line">AllowedIPs &#x3D; 172.16.0.3&#x2F;32</span><br><span class="line"></span><br><span class="line">[Peer]</span><br><span class="line"># Yichen</span><br><span class="line">PublicKey &#x3D; uYQJAsHtvClr2gnnUdMRZyzhTv6N9lY5L9ASZLW+AQM&#x3D;</span><br><span class="line">AllowedIPs &#x3D; 172.16.0.4&#x2F;32</span><br></pre></td></tr></table></figure>
+
+<p>有了配置文件，接下来就是配置Wireguard的interface了：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ip link add dev wg_vpns <span class="built_in">type</span> wireguard</span><br><span class="line">wg setconf wg_vpns wireguard.conf</span><br><span class="line">ip link <span class="built_in">set</span> up dev wg_vpns</span><br><span class="line">ip addr add 172.16.0.1/24 dev wg_vpns</span><br></pre></td></tr></table></figure>
+
+<h2 id="GRE-in-Wireguard的配置"><a href="#GRE-in-Wireguard的配置" class="headerlink" title="GRE in Wireguard的配置"></a>GRE in Wireguard的配置</h2><p>Wireguard已经实现了一个新的子网，直接利用新的子网内的IP地址，建立GRE就行：</p>
+<p>下面几行命令，需要在核心节点上执行多次，每次分别设置不同的主机。每台Wireguard连接进来的主机都需要在核心节点上按照下面的方法设置。下面仅以我的办公室的电脑为例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># gretap for office desktop</span></span><br><span class="line">ip link add name gretap_office <span class="built_in">type</span> gretap \</span><br><span class="line">    remote 172.16.0.2 <span class="built_in">local</span> 172.16.0.1 ttl 225</span><br><span class="line">ip link <span class="built_in">set</span> gretap_office up</span><br><span class="line">ip link <span class="built_in">set</span> gretap_office master taps_bridge</span><br></pre></td></tr></table></figure>
+
+<p>至此，核心节点的配置就已经结束了。</p>
+<h1 id="客户节点的配置"><a href="#客户节点的配置" class="headerlink" title="客户节点的配置"></a>客户节点的配置</h1><p>客户节点的配置要比核心节点简单很多，只需要建立GRETAP即可。取决于不同的情况，可能还需要建立网桥跟Wireguard。</p>
+<h2 id="GRE-over-GUE客户节点的配置"><a href="#GRE-over-GUE客户节点的配置" class="headerlink" title="GRE over GUE客户节点的配置"></a>GRE over GUE客户节点的配置</h2><p>笔者的GRE over GUE主要用在家里，用于把家里的子网跟核心节点桥接起来。笔者用来做这件事情的设备，是一台位于子网中的刷了openwrt的家用路由器。这台路由器关闭了DHCP服务器、Masquerade等家用路由器中标准的功能，IP地址固定在<code>192.168.88.6</code>，然后运行了一个名叫<code>br-lan</code>的网桥，把所有的有线跟无线网桥接起来（家用无线路由器默认都是会有网桥的，不需要人为启用啥）。</p>
+<p>首先需要做的是建立GRE：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">SERVER_IP=1.2.3.4  <span class="comment"># 保护隐私，此处隐去真实地址</span></span><br><span class="line">LOCAL_IP=192.168.88.6</span><br><span class="line">FOU_PORT=5555</span><br><span class="line"></span><br><span class="line">modprobe fou</span><br><span class="line">ip fou add port <span class="variable">$FOU_PORT</span> gue</span><br><span class="line">ip link add name gretap_over_gue <span class="built_in">type</span> gretap \</span><br><span class="line">    remote <span class="variable">$SERVER_IP</span> <span class="built_in">local</span> <span class="variable">$LOCAL_IP</span> \</span><br><span class="line">    ttl 225 encap gue encap-sport <span class="variable">$FOU_PORT</span> encap-dport <span class="variable">$FOU_PORT</span></span><br><span class="line">ip link <span class="built_in">set</span> gretap_over_gue up</span><br></pre></td></tr></table></figure>
+
+<p>然后把GRE添加到已有的网桥中即可：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip link <span class="built_in">set</span> gretap_over_gue master br-lan</span><br></pre></td></tr></table></figure>
+
+<h2 id="GRE-in-Wireguard客户节点的配置"><a href="#GRE-in-Wireguard客户节点的配置" class="headerlink" title="GRE in Wireguard客户节点的配置"></a>GRE in Wireguard客户节点的配置</h2><p>首先是配置文件wireguard.conf：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[Interface]</span><br><span class="line">PrivateKey &#x3D; bBbBbBbBbBbBbBbBbBbBbBbBbBbBbBbBbBbBbBbBbBb&#x3D;  # 此处为了隐私略去真实私钥</span><br><span class="line">#PublicKey &#x3D; 8TYMD&#x2F;dmDLgbAp1VSvhemGEe6e8Yr&#x2F;7GGjRCAce6ZGA&#x3D;</span><br><span class="line">ListenPort &#x3D; 3243</span><br><span class="line"></span><br><span class="line">[Peer]</span><br><span class="line">PublicKey &#x3D; JFcFDUEB0ZUVhUhfYPNT8Ma9FoeMVf2x03CYFyE5jTg&#x3D;</span><br><span class="line">AllowedIPs &#x3D; 0.0.0.0&#x2F;0</span><br><span class="line">EndPoint &#x3D; 1.2.3.4:23450</span><br></pre></td></tr></table></figure>
+
+<p>然后建立Wireguard连接：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ip link add dev wg_linode <span class="built_in">type</span> wireguard</span><br><span class="line">wg setconf wg_linode wireguard.conf</span><br><span class="line">ip link <span class="built_in">set</span> up dev wg_linode</span><br><span class="line">ip addr add 172.16.0.2/24 dev wg_linode</span><br></pre></td></tr></table></figure>
+
+<p>然后就是建立GRETAP：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ip link add name gretap_linode address 12:ab:34:<span class="built_in">cd</span>:56:ef <span class="built_in">type</span> gretap \</span><br><span class="line">    remote 172.16.0.1 <span class="built_in">local</span> 172.16.0.2 ttl 225</span><br><span class="line">ip link <span class="built_in">set</span> gretap_linode up</span><br><span class="line">ethtool --offload gretap_linode tx off</span><br></pre></td></tr></table></figure>
+
+<p>这里面我人为指定了GRETAP的Mac地址，如果不这么做的话，Linux就会给你随机分配一个，这样就导致每次连接的Mac地址都不一样。而IPv6地址则是根据Mac地址通过<a target="_blank" rel="noopener" href="https://community.cisco.com/t5/network-architecture-documents/understanding-ipv6-eui-64-bit-address/ta-p/3116953">EUI-64</a>来自动配置的，我需要一个固定的IPv6地址，这样我就可以给这个地址设置域名，然后从其他地方随时访问这个地址。</p>
+<p>另外，我手动关闭了GRETAP的interface的offload，我也不知道这是不是个内核Bug，但是如果不关的话，会出现校验和没人算的尴尬场面，进而导致所有的TCP包都出错。</p>
+<h1 id="在Vultr上的尝试"><a href="#在Vultr上的尝试" class="headerlink" title="在Vultr上的尝试"></a>在Vultr上的尝试</h1><p>劝我写本文的这位朋友，也在自己的Vultr主机上尝试实现了我的这种网络，来给他的移动设备提供IPv6地址。大的方法基本上跟这里无差，只不过不一样的是，Linode给你<code>/64</code>网段的方法，是在他们的路由表里面，把所有到这个网段的包全都路由到你的主机上去。而Vultr的IPv6，上来就给你的是一个<code>/64</code>的网段，你在Vultr的主机本身也只是监听Router Advertisement来自动配置IPv6地址而已。Vultr那边，不会帮你把到那个地址的所有包全都自动路由到你的主机，而是你得自己去响应Vultr的路由器的IPv6 Neighbor Discovery这种东西，让Vultr知道你的存在，他的路由器才会理你。这种设计，其实更简单了：我们不再需要自己的radvd了，只需要把你的interface跟GRE的那一堆interface桥接到一起就好，Vultr的网络设施，就会自动给你的网络发送Router Advertisement，而你也是有事直接找Vultr,你自己的主机需要做的事情很少。这实际上，相当于Vultr帮你做了一部分工作。具体的配制方法，也很简单，在配置核心节点的那一步，略去radvd的配置，然后设置bridge的时候，把你主机的出口interface也一并加到bridge里面来即可。</p>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="https://twitter.com/gaoxiang_ai">
+            <span class="icon">
+              <i class="fab fa-twitter"></i>
+            </span>
+
+            <span class="label">Twitter</span>
+          </a>
+        </div>
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/GRE/" rel="tag"># GRE</a>
+              <a href="/tags/GRETAP/" rel="tag"># GRETAP</a>
+              <a href="/tags/Wireguard/" rel="tag"># Wireguard</a>
+              <a href="/tags/GUE/" rel="tag"># GUE</a>
+              <a href="/tags/UDP/" rel="tag"># UDP</a>
+              <a href="/tags/iptables/" rel="tag"># iptables</a>
+              <a href="/tags/IPv6/" rel="tag"># IPv6</a>
+              <a href="/tags/Router-Advertisement/" rel="tag"># Router Advertisement</a>
+              <a href="/tags/%E7%BD%91%E6%A1%A5/" rel="tag"># 网桥</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/09/20/PyTorch-JIT-Source-Code-Read-Note/" rel="prev" title="PyTorch JIT Source Code Read Note">
+      <i class="fa fa-chevron-left"></i> PyTorch JIT Source Code Read Note
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/02/07/PyTorch-JIT-Source-Code-Read-Note-Updated-202002/" rel="next" title="PyTorch JIT Source Code Read Note (Updated at Feb 2020)">
+      PyTorch JIT Source Code Read Note (Updated at Feb 2020) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E7%BB%93%E6%9E%84%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="nav-number">1.</span> <span class="nav-text">网络结构的设计</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E8%8A%82%E7%82%B9%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="nav-number">2.</span> <span class="nav-text">核心节点的配置</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80%E8%AE%BE%E7%BD%AE%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="nav-number">2.1.</span> <span class="nav-text">网络基础设置的配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GRE-over-GUE%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="nav-number">2.2.</span> <span class="nav-text">GRE over GUE的配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Wireguard%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="nav-number">2.3.</span> <span class="nav-text">Wireguard的配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GRE-in-Wireguard%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="nav-number">2.4.</span> <span class="nav-text">GRE in Wireguard的配置</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E8%8A%82%E7%82%B9%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="nav-number">3.</span> <span class="nav-text">客户节点的配置</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#GRE-over-GUE%E5%AE%A2%E6%88%B7%E8%8A%82%E7%82%B9%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="nav-number">3.1.</span> <span class="nav-text">GRE over GUE客户节点的配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GRE-in-Wireguard%E5%AE%A2%E6%88%B7%E8%8A%82%E7%82%B9%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="nav-number">3.2.</span> <span class="nav-text">GRE in Wireguard客户节点的配置</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9C%A8Vultr%E4%B8%8A%E7%9A%84%E5%B0%9D%E8%AF%95"><span class="nav-number">4.</span> <span class="nav-text">在Vultr上的尝试</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zasdfgbnm</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">44</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zasdfgbnm" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zasdfgbnm" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/gaoxiang_ai" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;gaoxiang_ai" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zasdfgbnm</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+  <script>
+    (function(){
+      var canonicalURL, curProtocol;
+      //Get the <link> tag
+      var x=document.getElementsByTagName("link");
+		//Find the last canonical URL
+		if(x.length > 0){
+			for (i=0;i<x.length;i++){
+				if(x[i].rel.toLowerCase() == 'canonical' && x[i].href){
+					canonicalURL=x[i].href;
+				}
+			}
+		}
+    //Get protocol
+	    if (!canonicalURL){
+	    	curProtocol = window.location.protocol.split(':')[0];
+	    }
+	    else{
+	    	curProtocol = canonicalURL.split(':')[0];
+	    }
+      //Get current URL if the canonical URL does not exist
+	    if (!canonicalURL) canonicalURL = window.location.href;
+	    //Assign script content. Replace current URL with the canonical URL
+      !function(){var e=/([http|https]:\/\/[a-zA-Z0-9\_\.]+\.baidu\.com)/gi,r=canonicalURL,t=document.referrer;if(!e.test(r)){var n=(String(curProtocol).toLowerCase() === 'https')?"https://sp0.baidu.com/9_Q4simg2RQJ8t7jm9iCKT-xh_/s.gif":"//api.share.baidu.com/s.gif";t?(n+="?r="+encodeURIComponent(document.referrer),r&&(n+="&l="+r)):r&&(n+="?l="+r);var i=new Image;i.src=n}}(window);})();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://zasdfgbnm-github-io.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://zasdfgbnm.github.io/2018/11/09/GRE%E3%80%81Wireguard%E3%80%81%E7%BD%91%E6%A1%A5%E4%B8%8EIPv6/";
+    this.page.identifier = "2018/11/09/GRE、Wireguard、网桥与IPv6/";
+    this.page.title = "GRE、Wireguard、网桥与IPv6";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://zasdfgbnm-github-io.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

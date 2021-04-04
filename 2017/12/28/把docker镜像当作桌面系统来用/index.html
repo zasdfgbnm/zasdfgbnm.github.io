@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta name="google-site-verification" content="d44tDfSSWxm1_XP1dAq65hkgyD6zw70Ua9JdCaJqWGg">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"zasdfgbnm.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="博主一直都很喜欢思考怎样管理装在自己电脑上的桌面系统，这篇算是前作能当主力，能入虚拟机，还能随时打包带走，Linux就是这么强大的后续探索吧。 近些年来，Docker由于提供了一套非常方便地创建并运行应用容器的方法，而在全球掀起了一股容器化的热潮。容器通过将软件及其所需要的运行环境一同打包带走，从而将人们从依赖的苦海中拯救出来。虽然Docker设计的初衷并不是操作系统容器，更不是一个直接运行在裸机">
+<meta property="og:type" content="article">
+<meta property="og:title" content="把docker镜像当作桌面系统来用">
+<meta property="og:url" content="https://zasdfgbnm.github.io/2017/12/28/%E6%8A%8Adocker%E9%95%9C%E5%83%8F%E5%BD%93%E4%BD%9C%E6%A1%8C%E9%9D%A2%E7%B3%BB%E7%BB%9F%E6%9D%A5%E7%94%A8/index.html">
+<meta property="og:site_name" content="zasdfgbnm">
+<meta property="og:description" content="博主一直都很喜欢思考怎样管理装在自己电脑上的桌面系统，这篇算是前作能当主力，能入虚拟机，还能随时打包带走，Linux就是这么强大的后续探索吧。 近些年来，Docker由于提供了一套非常方便地创建并运行应用容器的方法，而在全球掀起了一股容器化的热潮。容器通过将软件及其所需要的运行环境一同打包带走，从而将人们从依赖的苦海中拯救出来。虽然Docker设计的初衷并不是操作系统容器，更不是一个直接运行在裸机">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-12-28T15:41:58.000Z">
+<meta property="article:modified_time" content="2021-04-04T05:17:59.799Z">
+<meta property="article:author" content="zasdfgbnm">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="docker">
+<meta property="article:tag" content="initramfs">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://zasdfgbnm.github.io/2017/12/28/%E6%8A%8Adocker%E9%95%9C%E5%83%8F%E5%BD%93%E4%BD%9C%E6%A1%8C%E9%9D%A2%E7%B3%BB%E7%BB%9F%E6%9D%A5%E7%94%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>把docker镜像当作桌面系统来用 | zasdfgbnm</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-7583294-5"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-7583294-5');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?a56abdeb557a286a6b7a104348fdfbcd";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="zasdfgbnm" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zasdfgbnm</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-sitemap">
+
+    <a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>Sitemap</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://zasdfgbnm.github.io/2017/12/28/%E6%8A%8Adocker%E9%95%9C%E5%83%8F%E5%BD%93%E4%BD%9C%E6%A1%8C%E9%9D%A2%E7%B3%BB%E7%BB%9F%E6%9D%A5%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zasdfgbnm">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zasdfgbnm">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          把docker镜像当作桌面系统来用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-12-28 10:41:58" itemprop="dateCreated datePublished" datetime="2017-12-28T10:41:58-05:00">2017-12-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-04-04 01:17:59" itemprop="dateModified" datetime="2021-04-04T01:17:59-04:00">2021-04-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus: </span>
+    
+    <a title="disqus" href="/2017/12/28/%E6%8A%8Adocker%E9%95%9C%E5%83%8F%E5%BD%93%E4%BD%9C%E6%A1%8C%E9%9D%A2%E7%B3%BB%E7%BB%9F%E6%9D%A5%E7%94%A8/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/12/28/把docker镜像当作桌面系统来用/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>博主一直都很喜欢思考怎样管理装在自己电脑上的桌面系统，这篇算是前作<a href="2017/06/29/%E8%83%BD%E5%BD%93%E4%B8%BB%E5%8A%9B%EF%BC%8C%E8%83%BD%E5%85%A5%E8%99%9A%E6%8B%9F%E6%9C%BA%EF%BC%8C%E8%BF%98%E8%83%BD%E9%9A%8F%E6%97%B6%E6%89%93%E5%8C%85%E5%B8%A6%E8%B5%B0%EF%BC%8CLinux%E5%B0%B1%E6%98%AF%E8%BF%99%E4%B9%88%E5%BC%BA%E5%A4%A7/">能当主力，能入虚拟机，还能随时打包带走，Linux就是这么强大</a>的后续探索吧。</p>
+<p>近些年来，Docker由于提供了一套非常方便地创建并运行应用容器的方法，而在全球掀起了一股容器化的热潮。容器通过将软件及其所需要的运行环境一同打包带走，从而将人们从依赖的苦海中拯救出来。虽然Docker设计的初衷并不是操作系统容器，更不是一个直接运行在裸机上的操作系统，但是docker这套强大的工具也会给我们管理操作系统带来巨大的便利。</p>
+<p>为什么要用Docker镜像当作桌面系统？这就要从普通桌面系统的不方便之处说起。通常我们都拥有不止一台电脑，我们希望这些电脑能够保持一致。这里所说的“一致”，用一个例子来讲，就是我在一台电脑上编辑了一半的文件，不需要认为拷贝到另一台电脑上，而是直接打开电脑就能编辑。如果这个文件只是一个纯文本文件，或者一个Microsoft Word文档，那么实现这个一致性非常简单：把文件扔到Dropbox之类的云同步盘就好。然而对于专业用户来讲，这种一致性的保持并非单纯的扔到Dropbox里面那么简单：比如说你最近忙于一个项目，这个项目要用到若干编程语言，然后在电脑里装了一堆库，一堆工具软件，有图形界面的，也有命令行的。在工作的过程中，你有可能不断安装新的工具，或者决定弃用某个之前计划使用的库或者工具。要让你的工作在你的若干台电脑上都能工作，就要一直维护不同机器的环境的一致性：在一台机器上安装的工具，要在所有机器上重新安装一遍。在一台机器上升级了的库，要在所有机器上都升级，稍微有所差池，就有可能出现某个脚本/程序在一台机器上跑的好好的，在另一台机器上却无法运行的问题。</p>
+<span id="more"></span>
+
+<h1 id="docker哲学"><a href="#docker哲学" class="headerlink" title="docker哲学"></a>docker哲学</h1><p>不熟悉docker的读者可以戳<a target="_blank" rel="noopener" href="https://docs.docker.com/get-started/">这里</a>来了解docker。Docker的使用非常简单：我们通过写一个Dockerfile，在Dockerfile中写入相应的命令来安装以及配置我们想要的库跟工具。不熟悉docker的读者可以看一下下面这个<a target="_blank" rel="noopener" href="https://github.com/kstaken/dockerfile-examples/blob/master/nodejs/Dockerfile">抄来的Dockerfile的例子</a>，来了解一下Dockerfile长啥样子：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> ubuntu</span><br><span class="line"><span class="keyword">MAINTAINER</span> Kimbro Staken</span><br><span class="line"></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get install -y software-properties-common python</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> add-apt-repository ppa:chris-lea/node.js</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> <span class="built_in">echo</span> <span class="string">&quot;deb http://us.archive.ubuntu.com/ubuntu/ precise universe&quot;</span> &gt;&gt; /etc/apt/sources.list</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get update</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get install -y nodejs</span></span><br><span class="line"><span class="comment">#RUN apt-get install -y nodejs=0.6.12~dfsg1-1ubuntu1</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> mkdir /var/www</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">ADD</span><span class="bash"> app.js /var/www/app.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> [<span class="string">&quot;/usr/bin/node&quot;</span>, <span class="string">&quot;/var/www/app.js&quot;</span>] </span></span><br></pre></td></tr></table></figure>
+<p>有了Dockerfile，只需要<code>docker build</code>一条命令就可以创建一个docker镜像。同时Docker公司提供一个叫做DockerHub的服务，可以免费托管公开镜像。只需要使用<code>docker push</code>就可以直接把镜像上传到DockerHub。在不同的电脑上只需要<code>docker pull</code>就可以从DockerHub获取最新版的镜像。DockerHub还支持自动构建，通过把DockerHub帐号跟GitHub帐号关联起来，就可以让DockerHub在GitHub上面的Dockerfile出现更改的时候自动重新生成镜像。</p>
+<p>本文开头所说的这种一致性的维护，docker实际上已经在给我们提供答案了：我们通过构建一个docker镜像，让这个镜像包含着我们项目所需要的所有的一切。这样的话，我们开发，测试，部署等等一切任务，都可以在先用<code>docker run</code>来开启一个容器，然后在容里面进行所有的工作。当我们决定修改运行环境，比如引入新的库的时候，就在Dockerfile中进行相应的修改，重新生成镜像，然后在不同的机器上用<code>docker pull</code>来更新一下就好。这种使用哲学，通过一个中心化了的仓库，非常优雅地解决了不同机器上环境一致的问题。美中不足的是，并不是所有的程序都能在容器里运行的，也并不是所有的程序都方便在容器里运行的。如果你用到了图形界面的程序，或者说是一些系统级别的程序，那么在容器里面使用这些程序会麻烦很多，有的甚至根本无法实现。于是自然地就会想到，如果我们能够在每次开机的时候，直接把某个docker生成的镜像挂载起来当根目录来使用，就可以让这个镜像直接在裸机上（而不是在容器中）运行，来做我们的日常桌面系统了。</p>
+<p>这种做法，除了在保持一致性方面带来的便利以外，还有一些其他的好处：</p>
+<ul>
+<li>整个系统保存在云端，本地的内容仅仅是云端的一份缓存而已，这样就完全没有必要定期对系统进行备份了。</li>
+<li>你的系统是如何从零开始一步一步配置成你想要的样子的，所有的一切都清晰地展现在Dockerfile里面。Dockerfile就是你最好的笔记。</li>
+<li>完全不用担心系统长时间使用产生一些残余的垃圾文件、或者某些系统中某些程序的数据出现损坏，因为每次开机，我们用的都是一个全新的系统。</li>
+<li>要装一台新机器，并不需要从头安装操作系统，只要从DockerHub拉取镜像拿来用就好，安装系统这个过程变得极其方便。</li>
+<li>系统更新的过程实际上就是根据Dockerfile从最新的软件仓库重新从头安装生成docker镜像的过程，不会出现某些更新遇到文件冲突或者依赖无法处理，需要人为干预才能完成的问题。</li>
+</ul>
+<h1 id="docker存储驱动的工作原理"><a href="#docker存储驱动的工作原理" class="headerlink" title="docker存储驱动的工作原理"></a>docker存储驱动的工作原理</h1><p>Docker的存储驱动<a target="_blank" rel="noopener" href="https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/">官方有介绍其工作原理</a>，这里只是简单概括一下。Docker使用了层的概念，docker在构建镜像的时候，会逐行执行我们的Dockerfile中的每一行，每执行一行的时候，docker就会创建出一个新的层来存放新的内容。当我们执行<code>docker pull</code>或者<code>docker push</code>的时候，docker实际上传跟下载的是这些层之间的增量。每当执行<code>docker run</code>，docker就会把这些下载下来的层组合到一起，组合成一个完整的镜像，然后新建一个读写层，所有运行过程中的写入都会被写入到读写层中，而镜像本身则是保持只读，不会被更改。“层”这个概念具体实现起来，根据docker目录（通常为<code>/var/lib/docker</code>这个目录）所在的文件系统的不同而不同，具体的实现在docker中被称为graph driver，docker自带的graph driver包括aufs、 overlay、btrfs、zfs、devicemapper等。这些graph driver大多使用了写时复制的技术，这样在把各个层组合在一起的过程不需要重新拷贝一份数据，实际的拷贝是在写入的时候发生的。</p>
+<p>由于笔者使用的是btrfs，所以本文就以btrfs为例子来介绍怎么让系统启动到docker镜像上去。btrfs是一个写时复制的系统，由于docker的镜像是由一个一个的层叠在一起组成的，docker在使用btrfs的时候，每往上叠一层，docker就会创建一个原来层的快照，然后把新层的内容写到快照里面去。然后docker会在从镜像创建容器的时候，给镜像的最顶层做个快照，把这个快照当作容器读写层来用。</p>
+<h1 id="启动到docker镜像中去"><a href="#启动到docker镜像中去" class="headerlink" title="启动到docker镜像中去"></a>启动到docker镜像中去</h1><p>明白了docker存储驱动的工作原理，还需要知道Linux的启动过程才能达成我们的目标。Linux在启动的时候，一般会让启动器给内核装载一个内存盘initramfs，然后内核完成简单的早期初始化以后，就会解压内存盘的内容到根目录<code>/</code>，然后启动内存盘中的init程序（一般为<code>/init</code>），这个init程序会进行进一步的初始化（比如说加载文件系统的驱动，对文件系统进行fsck等），这一步初始化完成了以后，这个init程序就会根据内核选项中的<code>root</code>、<code>rootflags</code>等内容挂载真正的根目录，然后通过<code>switch_root</code>程序启动真正根目录中的init程序，这个init程序则会完成最后的初始化工作，比如挂载fstab、加载图形界面等等。很多发行版都提供制作initramfs的工具，比如archlinux的mkinitcpio，这些工具通常都是模块化的，允许用户自己添加hook。</p>
+<p>让系统启动到docker镜像所需要的知识已经完备了。思路也清晰了：通过给initramfs中添加hook，让initramfs中的init在挂载root之前从docker本地缓存中的镜像中创建出一个快照作为读写层，然后把这个读写层当作真正的root来挂载。具体操作上，在启动管理器里面写启动项的内核选项的时候，<code>root</code>就写<code>/var/lib/docker</code>所在的分区，而<code>rootflags</code>里面至少要有一项<code>subvol=XXXXX</code>，其中XXXXX是我们打算创建的读写层的位置。然后重中之重则是，写一个hook，这个hook干的事情是：找到想要的docker镜像对应的btrfs子卷，给这个子卷创建一个快照，命名为XXXXX（跟内核选项中的名字保持一致）。这样的话，在Linux把控制权交给initramfs中的init程序以后，init程序会先去从docker缓存中的子卷创造出XXXXX快照，然后把XXXXX快照当作root来挂载以及进行接下来的操作。如果读者跟笔者一样使用Arch Linux的话，那么所有的这些工作笔者已经做了，读者可以直接拿来用。</p>
+<p>笔者的源码位于GitHub： <a target="_blank" rel="noopener" href="https://github.com/zasdfgbnm/mkinitcpio-docker-hooks">https://github.com/zasdfgbnm/mkinitcpio-docker-hooks</a> ，同时读者也可以直接从AUR中搜索<code>mkinitcpio-docker-hooks</code>来安装笔者的hook。下面就来介绍一下这个hook的使用方法。</p>
+<h1 id="mkinitcpio-docker-hooks的使用"><a href="#mkinitcpio-docker-hooks的使用" class="headerlink" title="mkinitcpio-docker-hooks的使用"></a>mkinitcpio-docker-hooks的使用</h1><p>mkinitcpio-docker-hooks的使用流程大概分为如下几步：</p>
+<ol>
+<li>确保你的<code>/var/lib/docker</code>位于某个btrfs分区中</li>
+<li>准备一个适合在裸机上启动的docker镜像</li>
+<li>然后在这个镜像中安装并配置mkinitcpio-docker-hooks</li>
+<li>准备内核跟initramfs</li>
+<li>准备top layer的内容</li>
+<li>设置启动管理器</li>
+</ol>
+<h2 id="docker镜像的准备"><a href="#docker镜像的准备" class="headerlink" title="docker镜像的准备"></a>docker镜像的准备</h2><p>要想启动到docker镜像中去，首先你得有一个适合在裸机上启动的docker镜像。很多docker镜像，为了减小镜像的大小，是不会附带只有裸机上才能用到的软件包（比如<code>dhcpcd</code>）的，所以读者可能需要在Dockerfile中手动安装这些软件包，对于Arch Linux来讲，只需要安装base组就可以了。由于接下来要安装<code>mkinitcpio-docker-hooks</code>，这里推荐使用一个已经内置yaourt的镜像，笔者使用的是自己的archlinux-yaourt镜像<a target="_blank" rel="noopener" href="https://cloud.docker.com/swarm/zasdfgbnm/repository/docker/zasdfgbnm/archlinux-yaourt/general">zasdfgbnm/archlinux-yaourt</a>。所以，Dockerfile的开头看起来是这个样子的：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> zasdfgbnm/archlinux-yaourt</span><br><span class="line"><span class="keyword">USER</span> root</span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> pacman -Syu --noconfirm base</span></span><br></pre></td></tr></table></figure>
+
+<p>作为示例，这里就不安装base之外的其他软件了，读者请自己根据需要安装其他软件。</p>
+<h2 id="安装并配置mkinitcpio-docker-hooks"><a href="#安装并配置mkinitcpio-docker-hooks" class="headerlink" title="安装并配置mkinitcpio-docker-hooks"></a>安装并配置mkinitcpio-docker-hooks</h2><p><code>mkinitcpio-docker-hooks</code>的安装是在docker里面而不是当前运行在裸机上的系统中进行的。之所以要把这个软件包安装在docker镜像里面，很重要的原因是因为Linux内核不提供ABI的稳定性，所以内核模块跟内核的版本必须严格对应，不然模块是无法加载的。为了保持这种一致性，我们采取的措施是，在docker里面安装<code>mkinitcpio-docker-hooks</code>，在docker中生成initramfs，并且在启动的时候用镜像里面的内核启动，就可以确保内核、initramfs中的模块、启动到镜像以后的<code>/lib/modules</code>三者保持一致。安装过程在Dockerfile中的写法如下：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">RUN</span><span class="bash"> sudo -u user yaourt -S --noconfirm mkinitcpio-docker-hooks</span></span><br></pre></td></tr></table></figure>
+
+<p>安装完了<code>mkinitcpio-docker-hooks</code>以后还需要配置，配置文件在<code>/etc/docker-btrfs.json</code>，初始内容如下：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">&quot;docker_image&quot;</span>: <span class="string">&quot;archlinux/base&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;docker_tag&quot;</span>: <span class="string">&quot;latest&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们需要做的就是把这两个变量的值替换为我们想要的值，比如说这里我打算把我的docker镜像的名字叫做“sample_image”。同时，我们还需要在<code>/etc/mkinitcpio.conf</code>中添加<code>docker-btrfs</code>这个hook。<br>综上，可以在Dockerfile中使用如下命令来配置：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">RUN</span><span class="bash"> sed -i <span class="string">&#x27;s/archlinux\/base/sample_image/g&#x27;</span> /etc/docker-btrfs.json</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> perl -i -p -e <span class="string">&#x27;s/(?&lt;=^HOOKS=\()(.*)(?=\))/$1 docker-btrfs/g&#x27;</span> /etc/mkinitcpio.conf</span></span><br></pre></td></tr></table></figure>
+
+<p>现在，我们有了一个完整的示例Dockerfile了：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> zasdfgbnm/archlinux-yaourt</span><br><span class="line"><span class="keyword">USER</span> root</span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> pacman -Syu --noconfirm base</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> sudo -u user yaourt -S --noconfirm mkinitcpio-docker-hooks</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> sed -i <span class="string">&#x27;s/archlinux\/base/sample_image/g&#x27;</span> /etc/docker-btrfs.json</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> perl -i -p -e <span class="string">&#x27;s/(?&lt;=^HOOKS=\()(.*)(?=\))/$1 docker-btrfs/g&#x27;</span> /etc/mkinitcpio.conf</span></span><br></pre></td></tr></table></figure>
+
+<p>只需要通过<code>docker build . -t sample_image</code>就可以构建自己的镜像了。</p>
+<h2 id="准备内核跟initramfs"><a href="#准备内核跟initramfs" class="headerlink" title="准备内核跟initramfs"></a>准备内核跟initramfs</h2><p>镜像生成好了以后，下一步就是准备内核跟构建initramfs了。注意这一步操作尽量在你打算用来启动docker镜像的机器上进行，因为mkinitcpio会自动根据机器把相应的内核模块放入initramfs中去，如果在别的机器上进行的话，那就可能会有一些驱动没有被自动装入initramfs中。如前所述，这一步的工作是在docker容器中进行的。首先运行容器并开启一个shell：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -v $(<span class="built_in">pwd</span>):/workspace -w /workspace -it sample_image bash</span><br></pre></td></tr></table></figure>
+
+<p>然后在容器中执行如下命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mkinitcpio -p linux</span><br><span class="line">cp /boot/* .</span><br><span class="line"><span class="built_in">exit</span></span><br></pre></td></tr></table></figure>
+
+<p>然后就可以在当前目录下看到准备好的<code>initramfs-linux-fallback.img</code>、<code>initramfs-linux.img</code>以及<code>vmlinuz-linux</code>了。</p>
+<h2 id="准备top-layer的内容"><a href="#准备top-layer的内容" class="headerlink" title="准备top layer的内容"></a>准备top layer的内容</h2><p>Top layer是<code>mkinitcpio-docker-hooks</code>引入的新概念，它指的是某个驱动器中的某个目录，这个目录会在启动的时候读写层创建之后，真正的root挂载之前，通过busybox的<code>cp -a</code>命令整个拷贝到读写层里面去。为什么需要top layer呢？因为我们需要在多台机器上启动同一个镜像，而不同机器上的往往会根据需要配置不同的配置文件，比如<code>/etc/fstab</code>以及<code>/etc/X11/xorg.conf</code>。另外，DockerHub免费账户上的镜像都是公开的，<code>/etc/passwd</code>、<code>/etc/shadow</code>等的私密性文件也不适合放在镜像里面存储。</p>
+<p>准备top layer的内容，实际上就是找一个文件夹，把需要单独配置的文件，按照从根目录算起的相对路径存放在这个文件夹里面。比如说如果你想给某台机器单独配置<code>/etc/fstab</code>，那么你就应该在top layer的目录中添加<code>etc/fstab</code>这个文件。这里推荐的具体的操作流程是：首先通过<code>docker run -v $(pwd):/workspace -w /workspace -it sample_image bash</code>进入容器中的shell，然后在其中做各种配置，比如<code>useradd ...</code>，完了以后把新生成的配置文件拷贝到top layer的文件夹中去</p>
+<h2 id="设置启动管理器"><a href="#设置启动管理器" class="headerlink" title="设置启动管理器"></a>设置启动管理器</h2><p>设置好了top layer以后，我们基本上可以算是万事具备只差东风了。我们只需要简单设置一下启动管理器就可以启动我们的系统了。这里以refind为例子，这里假设我们的所有东西放在一个label为“linux”的btrfs分区中，docker目录（也就是你系统启动以后会挂载到<code>/var/lib/docker</code>的目录）存放在这个分区根目录下的一个叫做“docker”的子卷中，而内核、initramfs以及top layer都是位于分区根目录下的“boot_docker”文件夹中，而我们希望创建的读写层名字叫做“docker_rwlayer”，那么相应的<code>refind.conf</code>中的菜单项的代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">menuentry archlinux-docker &#123;</span><br><span class="line">        icon EFI&#x2F;refind&#x2F;icons&#x2F;os_arch.png</span><br><span class="line">        volume linux</span><br><span class="line">        loader boot_docker&#x2F;vmlinuz-linux</span><br><span class="line">        initrd boot_docker&#x2F;initramfs-linux.img</span><br><span class="line">        options &quot;root&#x3D;LABEL&#x3D;linux rootflags&#x3D;subvol&#x3D;docker_rwlayer rw docker_path&#x3D;docker toplayer&#x3D;LABEL&#x3D;linux toplayer_path&#x3D;boot_docker&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中内核选项中，我们通过<code>root</code>来指定docker目录所在的分区，<code>rootflags</code>中的<code>subvol</code>来指定读写层的位置，<code>docker_path</code>来指定docker目录在<code>root</code>中的相对位置；通过<code>toplayer</code>来指定top layer目录所在的分区，<code>toplayerflags</code>来指定top layer所在分区的挂载选项，<code>toplayer_path</code>来指定top layer的目录在<code>toplayer</code>分区中的相对位置。</p>
+<p>一切就绪，重启并享受吧！</p>
+<p>另外，有兴趣的读者可以看一下笔者自用的docker镜像作为参考：<br><a target="_blank" rel="noopener" href="https://cloud.docker.com/swarm/zasdfgbnmsystem/repository/docker/zasdfgbnmsystem/archlinux-kde/general">https://cloud.docker.com/swarm/zasdfgbnmsystem/repository/docker/zasdfgbnmsystem/archlinux-kde/general</a><br><a target="_blank" rel="noopener" href="https://github.com/zasdfgbnm-dockers/archlinux-kde">https://github.com/zasdfgbnm-dockers/archlinux-kde</a></p>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="https://twitter.com/gaoxiang_ai">
+            <span class="icon">
+              <i class="fab fa-twitter"></i>
+            </span>
+
+            <span class="label">Twitter</span>
+          </a>
+        </div>
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+              <a href="/tags/docker/" rel="tag"># docker</a>
+              <a href="/tags/initramfs/" rel="tag"># initramfs</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/09/07/Extending-nftables/" rel="prev" title="Adding new expressions to nftables">
+      <i class="fa fa-chevron-left"></i> Adding new expressions to nftables
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/12/29/Using-docker-image-as-your-desktop-system/" rel="next" title="Using docker image as your desktop system">
+      Using docker image as your desktop system <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#docker%E5%93%B2%E5%AD%A6"><span class="nav-number">1.</span> <span class="nav-text">docker哲学</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#docker%E5%AD%98%E5%82%A8%E9%A9%B1%E5%8A%A8%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">docker存储驱动的工作原理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E5%88%B0docker%E9%95%9C%E5%83%8F%E4%B8%AD%E5%8E%BB"><span class="nav-number">3.</span> <span class="nav-text">启动到docker镜像中去</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mkinitcpio-docker-hooks%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">mkinitcpio-docker-hooks的使用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#docker%E9%95%9C%E5%83%8F%E7%9A%84%E5%87%86%E5%A4%87"><span class="nav-number">4.1.</span> <span class="nav-text">docker镜像的准备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E5%B9%B6%E9%85%8D%E7%BD%AEmkinitcpio-docker-hooks"><span class="nav-number">4.2.</span> <span class="nav-text">安装并配置mkinitcpio-docker-hooks</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E5%86%85%E6%A0%B8%E8%B7%9Finitramfs"><span class="nav-number">4.3.</span> <span class="nav-text">准备内核跟initramfs</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87top-layer%E7%9A%84%E5%86%85%E5%AE%B9"><span class="nav-number">4.4.</span> <span class="nav-text">准备top layer的内容</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E5%90%AF%E5%8A%A8%E7%AE%A1%E7%90%86%E5%99%A8"><span class="nav-number">4.5.</span> <span class="nav-text">设置启动管理器</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zasdfgbnm</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">44</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zasdfgbnm" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zasdfgbnm" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/gaoxiang_ai" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;gaoxiang_ai" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zasdfgbnm</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+  <script>
+    (function(){
+      var canonicalURL, curProtocol;
+      //Get the <link> tag
+      var x=document.getElementsByTagName("link");
+		//Find the last canonical URL
+		if(x.length > 0){
+			for (i=0;i<x.length;i++){
+				if(x[i].rel.toLowerCase() == 'canonical' && x[i].href){
+					canonicalURL=x[i].href;
+				}
+			}
+		}
+    //Get protocol
+	    if (!canonicalURL){
+	    	curProtocol = window.location.protocol.split(':')[0];
+	    }
+	    else{
+	    	curProtocol = canonicalURL.split(':')[0];
+	    }
+      //Get current URL if the canonical URL does not exist
+	    if (!canonicalURL) canonicalURL = window.location.href;
+	    //Assign script content. Replace current URL with the canonical URL
+      !function(){var e=/([http|https]:\/\/[a-zA-Z0-9\_\.]+\.baidu\.com)/gi,r=canonicalURL,t=document.referrer;if(!e.test(r)){var n=(String(curProtocol).toLowerCase() === 'https')?"https://sp0.baidu.com/9_Q4simg2RQJ8t7jm9iCKT-xh_/s.gif":"//api.share.baidu.com/s.gif";t?(n+="?r="+encodeURIComponent(document.referrer),r&&(n+="&l="+r)):r&&(n+="?l="+r);var i=new Image;i.src=n}}(window);})();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://zasdfgbnm-github-io.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://zasdfgbnm.github.io/2017/12/28/%E6%8A%8Adocker%E9%95%9C%E5%83%8F%E5%BD%93%E4%BD%9C%E6%A1%8C%E9%9D%A2%E7%B3%BB%E7%BB%9F%E6%9D%A5%E7%94%A8/";
+    this.page.identifier = "2017/12/28/把docker镜像当作桌面系统来用/";
+    this.page.title = "把docker镜像当作桌面系统来用";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://zasdfgbnm-github-io.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>
